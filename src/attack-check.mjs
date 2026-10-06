@@ -12,7 +12,9 @@ export async function runAttackChecks(config) {
       || app.pathname !== '/' || app.hostname.endsWith('.example')) {
     throw new Error('aleph.config.json의 실제 배포 주소를 먼저 넣어 주세요.');
   }
-  if (typeof config.sampleMarker !== 'string' || !config.sampleMarker) throw new Error('가상 메모의 확인 표시를 넣어 주세요.');
+  if (config.step === 1 && (typeof config.sampleMarker !== 'string' || !config.sampleMarker)) {
+    throw new Error('가상 메모의 확인 표시를 넣어 주세요.');
+  }
   const response = await fetch(new URL('/data.json', app), {
     redirect: 'error', signal: AbortSignal.timeout(10000),
   });
@@ -20,8 +22,11 @@ export async function runAttackChecks(config) {
   if (response.ok) {
     try {
       const data = await response.json();
-      visible = data?.sampleMarker === config.sampleMarker && Array.isArray(data.notes)
-        && (config.step === 1 ? data.notes.length > 0 : data.notes.length === 0);
+      const hasSampleMarker = Object.prototype.hasOwnProperty.call(data, 'sampleMarker');
+      visible = Array.isArray(data.notes)
+        && (config.step === 1
+          ? hasSampleMarker && data.sampleMarker === config.sampleMarker && data.notes.length > 0
+          : !hasSampleMarker && data.notes.length === 0);
     } catch {
       // A non-JSON response is a failed check, not a successful deployment.
     }
