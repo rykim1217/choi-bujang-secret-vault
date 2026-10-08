@@ -16,20 +16,20 @@
     },
     {
       "alertId": "bf-03",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "block",
+      "confidence": 0.95,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-04",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "block",
+      "confidence": 0.95,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-05",
-      "action": "alert",
-      "confidence": 0.65,
+      "action": "block",
+      "confidence": 0.95,
       "reason": "rapid_same_source_failures"
     },
     {
@@ -40,81 +40,81 @@
     },
     {
       "alertId": "bf-07",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "block",
+      "confidence": 0.95,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-08",
-      "action": "alert",
-      "confidence": 0.65,
+      "action": "block",
+      "confidence": 0.95,
       "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-09",
       "action": "block",
       "confidence": 0.95,
-      "reason": "same_password_across_accounts"
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-10",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "block",
+      "confidence": 0.95,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-11",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-12",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-13",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-14",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-15",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-16",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-17",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-18",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-19",
-      "action": "record",
-      "confidence": 0,
-      "reason": "no_matching_pattern"
+      "action": "alert",
+      "confidence": 0.65,
+      "reason": "rapid_same_source_failures"
     },
     {
       "alertId": "bf-20",
@@ -172,8 +172,8 @@
     }
   ],
   "counts": {
-    "block": 4,
-    "alert": 2,
-    "record": 22
+    "block": 10,
+    "alert": 9,
+    "record": 9
   }
 }
