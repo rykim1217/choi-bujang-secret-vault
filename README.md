@@ -59,6 +59,12 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 로컬 확인은 `npm run build -- --local`, `npm run test:r5`, `npm run test:package`로 수행합니다. bundle과 실제 제출 묶음 생성은 이 저장점 이후 별도로 실행합니다.
 
+## 보너스 xdr-01 저장점
+
+`xdr/brute-force/read-alerts.mjs`는 원본 경보에서 시각·출발 주소·계정·규칙 수준·설명만 읽고, `patterns.json`과 `decide.mjs`는 MITRE ATT&CK T1110 근거의 두 무차별 대입 패턴을 판정합니다. `decide.mjs`는 판단만 반환하며, `respond.mjs`는 차단 후보에만 15분 만료·근거 경보 번호가 있는 ZTNA 거부 규칙 후보를 만들고 `xdr/alerts.log`에 민감한 식별값 없이 한 줄 알림을 남깁니다. 기존 `src/decider.mjs` 규칙은 변경하지 않습니다.
+
+경보 결과 묶음은 저장소 루트에서 `npm run xdr:run -- brute-force`로 다시 만들며 `xdr/brute-force/result.json`에 기록합니다. 이 로컬 실행 결과는 심판 판정이나 운영 연결 증명이 아닙니다.
+
 ## 다음 단계의 코딩 도구에 전달할 규칙
 
 [AGENTS.md](AGENTS.md)를 먼저 읽히고 한 번에 한 제작 단위만 요청하세요. 2단계부터는 자료 보호를 구현할 때 `public/data.json`을 복사하는 1단계 빌드 흐름도 함께 바꿔야 합니다. 4단계에서는 개별 메모 경로의 소유자 검사를 추가하고, 5단계에서는 원본 API 주소를 기록하며, 6단계 이후 정책 규칙은 해당 단계 원고와 계약에 맞춰 추가합니다. 비밀번호·토큰·서버 전용 키·실제 학생 기록을 코드, Git, 제출 묶음에 넣지 않습니다.

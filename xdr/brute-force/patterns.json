@@ -1,0 +1,21 @@
+{
+  "schema": "aleph.xdr.patterns.v1",
+  "moduleKey": "brute-force",
+  "technique": {
+    "id": "T1110",
+    "name": "Brute Force",
+    "source": "MITRE ATT&CK"
+  },
+  "patterns": [
+    {
+      "name": "rapid_same_source_failures",
+      "condition": "짧은 시간 창에서 같은 data.srcip의 로그인 실패가 연속으로 누적되는 경보",
+      "evidence": "MITRE ATT&CK T1110은 반복적·체계적인 인증 시도로 비밀번호를 추측하는 무차별 대입을 설명한다."
+    },
+    {
+      "name": "same_password_across_accounts",
+      "condition": "같은 data.srcip가 여러 계정에 동일한 비밀번호를 반복 대입한 경보",
+      "evidence": "MITRE ATT&CK T1110은 계정 또는 계정 집합을 대상으로 반복적으로 비밀번호를 시도하는 무차별 대입을 설명한다."
+    }
+  ]
+}
