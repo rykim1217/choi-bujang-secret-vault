@@ -1,4 +1,4 @@
-import { formatNote, getAuthenticatedContext } from '../notes.js';
+import { formatNote, getAuthenticatedContext, requireSameOrigin } from '../notes.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
@@ -24,6 +24,8 @@ export default async function handler(request, response) {
     response.setHeader('Allow', 'GET, PUT, DELETE');
     return response.status(405).json({ error: 'METHOD_NOT_ALLOWED' });
   }
+
+  if (['PUT', 'DELETE'].includes(request.method) && !requireSameOrigin(request, response)) return;
 
   const id = routeId(request);
   if (typeof id !== 'string' || !UUID.test(id)) {

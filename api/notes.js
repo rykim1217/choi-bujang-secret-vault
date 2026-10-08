@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import {
+  ACCESS_COOKIE,
+  REFRESH_COOKIE,
+  getCookie,
+  getRequestHeader,
+  sameOriginRequest,
+  setSessionCookies,
+} from '../src/auth-session.mjs';
 import { createLoginVerifier } from '../src/verify-login.mjs';
 
 const config = JSON.parse(readFileSync(new URL('../aleph.config.json', import.meta.url), 'utf8'));
@@ -20,7 +28,27 @@ export async function getAuthenticatedContext(request, response) {
     return null;
   }
 
-  const principal = await getLoginVerifier(supabaseSecretKey)(request.headers.authorization);
+  const authorization = getRequestHeader(request, 'authorization');
+  const accessToken = getCookie(request, ACCESS_COOKIE);
+  const cookieAuthorization = accessToken ? `Bearer ${accessToken}` : '';
+  const candidateAuthorization = authorization || cookieAuthorization;
+  const verifyLogin = getLoginVerifier(supabaseSecretKey);
+  let principal = candidateAuthorization ? await verifyLogin(candidateAuthorization) : null;
+
+  if (!principal && !authorization) {
+    const refreshToken = getCookie(request, REFRESH_COOKIE);
+    if (refreshToken) {
+      const refresh = await createClient(supabaseUrl, supabaseSecretKey, {
+        auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
+      }).auth.refreshSession({ refresh_token: refreshToken });
+      if (!refresh.error && refresh.data?.session?.access_token
+          && refresh.data.session.refresh_token) {
+        setSessionCookies(response, refresh.data.session);
+        principal = await verifyLogin(`Bearer ${refresh.data.session.access_token}`);
+      }
+    }
+  }
+
   if (!principal) {
     response.status(401).json({ error: 'AUTHENTICATION_REQUIRED' });
     return null;
@@ -29,6 +57,12 @@ export async function getAuthenticatedContext(request, response) {
   return { principal, supabase: createClient(supabaseUrl, supabaseSecretKey, {
     auth: { autoRefreshToken: false, persistSession: false }
   }) };
+}
+
+export function requireSameOrigin(request, response) {
+  if (sameOriginRequest(request, config)) return true;
+  response.status(403).json({ error: 'CSRF_ORIGIN_REJECTED' });
+  return false;
 }
 
 export function formatNote(note) {
@@ -52,6 +86,8 @@ export default async function handler(request, response) {
     response.setHeader('Allow', 'GET, POST');
     return response.status(405).json({ error: 'METHOD_NOT_ALLOWED' });
   }
+
+  if (request.method === 'POST' && !requireSameOrigin(request, response)) return;
 
   const context = await getAuthenticatedContext(request, response);
   if (!context) return;
