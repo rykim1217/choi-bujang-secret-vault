@@ -12,6 +12,29 @@
     h1 { margin: 16px 0; font-size: clamp(30px, 7vw, 48px); line-height: 1.2; }
     p { font-size: 17px; line-height: 1.7; color: #bfd0e5; }
     .notice { margin: 26px 0; padding: 18px; border: 1px solid #d07384; border-radius: 14px; color: #ffe3e8; background: #612a3544; }
+    .auth { margin: 26px 0; padding: 20px; border: 1px solid #51667c; border-radius: 14px; background: #162538; }
+    .auth h2 { margin: 0 0 14px; font-size: 21px; }
+    .auth form { display: grid; gap: 12px; }
+    .auth label { display: grid; gap: 6px; color: #bfd0e5; font-size: 14px; }
+    .auth input { box-sizing: border-box; width: 100%; padding: 11px 12px; border: 1px solid #68809a; border-radius: 8px; background: #0d1826; color: #ecf4ff; font: inherit; }
+    .auth button { width: fit-content; padding: 10px 15px; border: 0; border-radius: 8px; background: #8ad8df; color: #10202d; cursor: pointer; font: inherit; font-weight: 700; }
+    .auth button:disabled { cursor: wait; opacity: .65; }
+    .auth-status { min-height: 1.5em; margin: 12px 0 0; color: #bdebed; font-size: 14px; }
+    .signed-in { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+    .signed-in p { margin: 0; font-size: 16px; }
+    .note-editor { margin: 26px 0; padding: 20px; border: 1px solid #51667c; border-radius: 14px; background: #162538; }
+    .note-editor h2 { margin: 0 0 14px; font-size: 21px; }
+    .note-form { display: grid; gap: 12px; }
+    .note-form label { display: grid; gap: 6px; color: #bfd0e5; font-size: 14px; }
+    .note-form input, .note-form textarea { box-sizing: border-box; width: 100%; padding: 11px 12px; border: 1px solid #68809a; border-radius: 8px; background: #0d1826; color: #ecf4ff; font: inherit; }
+    .note-form textarea { min-height: 110px; resize: vertical; }
+    .note-form-actions, .note-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+    .note-form button, .note-actions button { padding: 9px 13px; border: 0; border-radius: 8px; background: #8ad8df; color: #10202d; cursor: pointer; font: inherit; font-weight: 700; }
+    .note-form button:disabled, .note-actions button:disabled { cursor: wait; opacity: .65; }
+    .note-form .secondary, .note-actions .secondary { background: #51667c; color: #ecf4ff; }
+    .note-actions .danger { background: #d07384; color: #fff1f3; }
+    .note-status { min-height: 1.5em; margin: 12px 0 0; color: #bdebed; font-size: 14px; }
+    .note-actions { margin-top: 13px; }
     ul { list-style: none; display: grid; gap: 12px; padding: 0; }
     li { border: 1px solid #51667c; border-radius: 14px; padding: 17px 19px; background: #1a2a3d; }
     strong { display: block; font-size: 18px; margin-bottom: 5px; }
@@ -20,33 +43,226 @@
 </head>
 <body>
   <main>
-    <div class="eyebrow">BYTE BACK · 1단계 피해 확인</div>
+    <div class="eyebrow">BYTE BACK · 로그인</div>
     <h1>점령된 자료실</h1>
     <p>지금은 보호 장치가 없는 상태입니다. 아래 기록은 모두 실습을 위해 만든 가상 자료입니다.</p>
-    <div class="notice">로그인하지 않은 방문자도 자료를 볼 수 있습니다. 공개 범위를 확인하고, 다음 제작 단계에서 접근을 차례로 막아 주세요.</div>
+    <section class="auth" aria-labelledby="auth-title">
+      <h2 id="auth-title">자료실 로그인</h2>
+      <form id="login-form">
+        <label for="email">이메일</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+        <label for="password">비밀번호</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">로그인</button>
+      </form>
+      <div id="signed-in" class="signed-in" hidden>
+        <p>로그인됨: <strong id="signed-in-email"></strong></p>
+        <button id="logout" type="button">로그아웃</button>
+      </div>
+      <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
+    </section>
+    <div class="notice">로그인하지 않은 방문자는 자료를 볼 수 없습니다. 로그인 후 가상 메모를 추가·수정·삭제할 수 있습니다.</div>
+    <section id="note-editor" class="note-editor" aria-labelledby="note-editor-title" hidden>
+      <h2 id="note-editor-title">가상 메모 관리</h2>
+      <form id="note-form" class="note-form">
+        <input id="note-id" type="hidden">
+        <label for="note-title">제목</label>
+        <input id="note-title" name="title" type="text" maxlength="200" required>
+        <label for="note-body">본문</label>
+        <textarea id="note-body" name="body" maxlength="5000" required></textarea>
+        <div class="note-form-actions">
+          <button id="save-note" type="submit">메모 추가</button>
+          <button id="cancel-edit" class="secondary" type="button" hidden>편집 취소</button>
+        </div>
+      </form>
+      <p id="note-status" class="note-status" role="status" aria-live="polite"></p>
+    </section>
     <ul id="notes" aria-live="polite"><li>가상 자료를 불러오는 중입니다.</li></ul>
   </main>
   <script type="module">
-    const list = document.querySelector('#notes');
-    try {
-      const response = await fetch('/api/notes', { cache: 'no-store' });
-      if (!response.ok) throw new Error('보호된 자료를 불러올 수 없습니다.');
-      const data = await response.json();
-      if (!Array.isArray(data.notes)) throw new Error('자료 형식이 맞지 않습니다.');
-      list.replaceChildren(...data.notes.map(note => {
-        const item = document.createElement('li');
-        const title = document.createElement('strong');
-        const content = document.createElement('span');
-        title.textContent = note.title;
-        content.textContent = note.content;
-        item.append(title, content);
-        return item;
-      }));
-    } catch (error) {
-      const item = document.createElement('li');
-      item.textContent = error.message;
-      list.replaceChildren(item);
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.117.2';
+
+    const supabase = createClient(
+      'https://twlexezngmyrssrebduw.supabase.co',
+      'sb_publishable_jU8E21WoSTaZmfrH6hHUJA_oQH0jwds'
+    );
+    const loginForm = document.querySelector('#login-form');
+    const signedIn = document.querySelector('#signed-in');
+    const signedInEmail = document.querySelector('#signed-in-email');
+    const logoutButton = document.querySelector('#logout');
+    const authStatus = document.querySelector('#auth-status');
+    const noteEditor = document.querySelector('#note-editor');
+    const noteForm = document.querySelector('#note-form');
+    const noteId = document.querySelector('#note-id');
+    const noteTitle = document.querySelector('#note-title');
+    const noteBody = document.querySelector('#note-body');
+    const saveNoteButton = document.querySelector('#save-note');
+    const cancelEditButton = document.querySelector('#cancel-edit');
+    const noteStatus = document.querySelector('#note-status');
+    let activeSession = null;
+
+    function renderAuthState(session) {
+      activeSession = session;
+      const email = session?.user?.email;
+      loginForm.hidden = Boolean(email);
+      signedIn.hidden = !email;
+      signedInEmail.textContent = email ?? '';
+      noteEditor.hidden = !email;
+      if (!email) resetNoteEditor();
     }
+
+    function resetNoteEditor() {
+      noteForm.reset();
+      noteId.value = '';
+      saveNoteButton.textContent = '메모 추가';
+      cancelEditButton.hidden = true;
+    }
+
+    function startEditing(note) {
+      noteId.value = note.id;
+      noteTitle.value = note.title;
+      noteBody.value = note.body;
+      saveNoteButton.textContent = '메모 수정';
+      cancelEditButton.hidden = false;
+      noteTitle.focus();
+    }
+
+    async function apiRequest(path, options = {}, session = activeSession) {
+      const headers = new Headers(options.headers);
+      if (session?.access_token) headers.set('Authorization', `Bearer ${session.access_token}`);
+      if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+      return fetch(path, { ...options, cache: 'no-store', headers });
+    }
+
+    async function responseData(response) {
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.error ?? '자료 요청에 실패했습니다.');
+      return data;
+    }
+
+    async function loadNotes(session = activeSession) {
+      const list = document.querySelector('#notes');
+      list.replaceChildren(Object.assign(document.createElement('li'), {
+        textContent: '가상 자료를 불러오는 중입니다.'
+      }));
+      try {
+        const data = await responseData(await apiRequest('/api/notes', {}, session));
+        if (!Array.isArray(data.notes)) throw new Error('자료 형식이 맞지 않습니다.');
+        if (!data.notes.length) {
+          list.replaceChildren(Object.assign(document.createElement('li'), {
+            textContent: '저장된 메모가 없습니다.'
+          }));
+          return;
+        }
+        list.replaceChildren(...data.notes.map(note => {
+          const item = document.createElement('li');
+          const title = document.createElement('strong');
+          const content = document.createElement('span');
+          title.textContent = note.title;
+          content.textContent = note.body;
+          const actions = document.createElement('div');
+          actions.className = 'note-actions';
+          const editButton = document.createElement('button');
+          editButton.className = 'secondary';
+          editButton.type = 'button';
+          editButton.textContent = '수정';
+          editButton.addEventListener('click', () => startEditing(note));
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'danger';
+          deleteButton.type = 'button';
+          deleteButton.textContent = '삭제';
+          deleteButton.addEventListener('click', () => deleteNote(note));
+          actions.append(editButton, deleteButton);
+          item.append(title, content, actions);
+          return item;
+        }));
+      } catch (error) {
+        const item = document.createElement('li');
+        item.textContent = error.message;
+        list.replaceChildren(item);
+      }
+    }
+
+    async function deleteNote(note) {
+      if (!window.confirm(`「${note.title}」 메모를 삭제할까요?`)) return;
+      try {
+        await responseData(await apiRequest(`/api/notes/${encodeURIComponent(note.id)}`, { method: 'DELETE' }));
+        if (noteId.value === note.id) resetNoteEditor();
+        noteStatus.textContent = '메모를 삭제했습니다.';
+        await loadNotes();
+      } catch (error) {
+        noteStatus.textContent = `삭제 실패: ${error.message}`;
+      }
+    }
+
+    noteForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const id = noteId.value.trim();
+      const method = id ? 'PUT' : 'POST';
+      const path = id ? `/api/notes/${encodeURIComponent(id)}` : '/api/notes';
+      saveNoteButton.disabled = true;
+      noteStatus.textContent = id ? '메모를 수정하는 중입니다.' : '메모를 추가하는 중입니다.';
+      try {
+        await responseData(await apiRequest(path, {
+          method,
+          body: JSON.stringify({ title: noteTitle.value, body: noteBody.value })
+        }));
+        resetNoteEditor();
+        noteStatus.textContent = id ? '메모를 수정했습니다.' : '메모를 추가했습니다.';
+        await loadNotes();
+      } catch (error) {
+        noteStatus.textContent = `${id ? '수정' : '추가'} 실패: ${error.message}`;
+      } finally {
+        saveNoteButton.disabled = false;
+      }
+    });
+
+    cancelEditButton.addEventListener('click', resetNoteEditor);
+
+    loginForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      const submitButton = loginForm.querySelector('button[type="submit"]');
+      const formData = new FormData(loginForm);
+      submitButton.disabled = true;
+      authStatus.textContent = '로그인 중입니다.';
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.get('email'),
+          password: formData.get('password')
+        });
+        if (error) {
+          authStatus.textContent = `로그인 실패: ${error.message}`;
+          return;
+        }
+        loginForm.reset();
+        authStatus.textContent = '로그인되었습니다.';
+      } catch (error) {
+        authStatus.textContent = `로그인 실패: ${error.message}`;
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    logoutButton.addEventListener('click', async () => {
+      logoutButton.disabled = true;
+      try {
+        const { error } = await supabase.auth.signOut();
+        authStatus.textContent = error ? `로그아웃 실패: ${error.message}` : '로그아웃되었습니다.';
+      } catch (error) {
+        authStatus.textContent = `로그아웃 실패: ${error.message}`;
+      } finally {
+        logoutButton.disabled = false;
+      }
+    });
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      renderAuthState(session);
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') void loadNotes(session);
+    });
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    renderAuthState(session);
+    if (sessionError) authStatus.textContent = `로그인 상태를 확인할 수 없습니다: ${sessionError.message}`;
+    await loadNotes(session);
   </script>
 </body>
 </html>
