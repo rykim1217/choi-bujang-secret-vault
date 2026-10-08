@@ -154,7 +154,7 @@
         textContent: '가상 자료를 불러오는 중입니다.'
       }));
       try {
-        const data = await responseData(await apiRequest('/api/notes', {}, session));
+        const data = await responseData(await apiRequest('/api/notes'));
         if (!Array.isArray(data.notes)) throw new Error('자료 형식이 맞지 않습니다.');
         if (!data.notes.length) {
           list.replaceChildren(Object.assign(document.createElement('li'), {
