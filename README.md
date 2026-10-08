@@ -1,6 +1,6 @@
 # BYTE BACK 방어전 시작 틀 R5
 
-이 저장소는 1단계에서 학생 본인이 GitHub 저장소와 Vercel 배포를 만드는 출발점입니다. 2단계에서 가상 메모를 보호하고, 3단계 「진짜 로그인을 붙입니다」에서 Supabase Auth 로그인과 로그인 사용자용 메모 기능을 연결했으며, 4단계 「로그인해도 내 자료만 보이게 합니다」에서 메모 소유자 검사를 추가했습니다. 실제 학생 자료, 토큰, 비밀키를 넣지 마세요.
+이 저장소는 1단계에서 학생 본인이 GitHub 저장소와 Vercel 배포를 만드는 출발점입니다. 2단계에서 가상 메모를 보호하고, 3단계 「진짜 로그인을 붙입니다」에서 Supabase Auth 로그인과 로그인 사용자용 메모 기능을 연결했으며, 4단계 「로그인해도 내 자료만 보이게 합니다」에서 메모 소유자 검사를 추가했습니다. 5단계 「자료 요청을 서버 한곳으로 모읍니다」에서 로그인과 자료 요청을 Vercel 서버 함수로 모았습니다. 실제 학생 자료, 토큰, 비밀키를 넣지 마세요.
 
 ## 학생이 하는 일: 세 걸음
 
@@ -43,13 +43,21 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 `$deployUrl`에는 실제 Vercel 주소를 확인해 넣습니다. GitHub의 과거 공개 커밋·브랜치·태그와 Vercel의 과거 공개 배포 URL도 같은 방식으로 확인합니다. 옛 공개 커밋이나 옛 배포가 남아 있거나 메모 문장을 계속 제공하는 동안에는 과거 노출이 해소됐다고 쓰지 않습니다. 현재 `origin/main`과 현재 배포가 깨끗한 것은 과거 노출 해소의 증명이 아닙니다.
 
-`aleph.config.json`의 `step`은 현재 구현에 맞춰 4이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`를 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
+`aleph.config.json`의 `step`은 현재 구현에 맞춰 5이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 4단계 저장점
 
 현재 작동하는 기능은 메모 없는 `/data.json`, Supabase Auth 이메일·비밀번호 로그인·로그아웃, 검증된 Bearer 토큰이 필요한 `/api/notes` 목록·추가 API, 로그인한 자기 메모의 추가·수정·삭제, `GET|PUT|DELETE /api/notes/:id`, `nosniff` 응답 헤더입니다. 목록과 개별 경로는 로그인 사용자의 `owner_id`로 제한하며, 수정 시 기존 행과 갱신 결과의 소유자도 확인합니다. `identityProvider`에는 Supabase 발급자·대상·JWKS 주소를, `allowedRoutes`에는 실제 자료 API 경로를 기록합니다.
 
 로컬 정적 화면은 `npm run build -- --local`로 다시 만들고, 기존 회귀 확인은 `npm run test:r5`와 `npm run test:package`로 수행합니다. 실제 CRUD 확인은 Vercel 배포에서 수행하며, 로컬 정적 실행과 회귀 테스트는 Vercel 배포나 심판 접수를 증명하지 않습니다. `src/attack-check.mjs`는 실제 배포에서 `/data.json`의 비공개 상태와 비로그인 `/api/notes`의 JSON 401/403 거부를 확인합니다. 4단계의 교차 소유자 GET·PUT·DELETE 점검은 `ALEPH_CHECK_OWNER_A_TOKEN`과 `ALEPH_CHECK_OWNER_B_TOKEN`을 공식 비밀 입력란에 넣었을 때만 실제 요청을 보내며, 값이 없으면 미실행으로 남깁니다. `npm run bundle`은 저장점에서만 실행합니다.
+
+## 5단계 최종 저장점
+
+브라우저의 Supabase JS와 공개 키를 제거하고 `/api/auth` 서버 함수가 로그인·로그아웃·세션 확인을 처리합니다. access token과 refresh token은 `HttpOnly; Secure; SameSite=Lax` 쿠키로만 관리하며, `/api/notes`와 `/api/notes/:id`는 쿠키 인증과 기존 Bearer 인증을 모두 지원하고 서버의 로그인·`owner_id` 검사를 유지합니다. production 상태 변경 요청에는 `Origin` 검사를 적용합니다.
+
+`aleph.config.json`은 `step: 5`, 원본 Supabase Data API `originalApiUrl`, `/api/auth`와 `/api/notes` 관련 `allowedRoutes`를 기록합니다. production 커밋 `898fe84`에서 `/aleph.json`은 HTTP 200과 `step: 5`, 루트 응답은 `nosniff`, 원본 Data API의 공개 키 직접 요청은 HTTP 401로 확인했습니다. production 정적 파일에서 Supabase 공개 키·서버 전용 키·seed marker는 검색되지 않았습니다.
+
+로컬 확인은 `npm run build -- --local`, `npm run test:r5`, `npm run test:package`로 수행합니다. bundle과 실제 제출 묶음 생성은 이 저장점 이후 별도로 실행합니다.
 
 ## 다음 단계의 코딩 도구에 전달할 규칙
 
