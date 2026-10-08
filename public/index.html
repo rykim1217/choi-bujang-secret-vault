@@ -61,7 +61,7 @@
       </div>
       <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
     </section>
-    <div class="notice">로그인하지 않은 방문자는 자료를 볼 수 없습니다. 로그인 후 가상 메모를 추가·수정·삭제할 수 있습니다.</div>
+    <div id="anonymous-notice" class="notice">로그인하지 않은 방문자는 자료를 볼 수 없습니다. 로그인 후 가상 메모를 추가·수정·삭제할 수 있습니다.</div>
     <section id="note-editor" class="note-editor" aria-labelledby="note-editor-title" hidden>
       <h2 id="note-editor-title">가상 메모 관리</h2>
       <form id="note-form" class="note-form">
@@ -91,6 +91,7 @@
     const signedInEmail = document.querySelector('#signed-in-email');
     const logoutButton = document.querySelector('#logout');
     const authStatus = document.querySelector('#auth-status');
+    const anonymousNotice = document.querySelector('#anonymous-notice');
     const noteEditor = document.querySelector('#note-editor');
     const noteForm = document.querySelector('#note-form');
     const noteId = document.querySelector('#note-id');
@@ -107,6 +108,7 @@
       loginForm.hidden = Boolean(email);
       signedIn.hidden = !email;
       signedInEmail.textContent = email ?? '';
+      anonymousNotice.hidden = Boolean(email);
       noteEditor.hidden = !email;
       if (!email) resetNoteEditor();
     }
