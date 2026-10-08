@@ -6,6 +6,7 @@
   <title>BYTE BACK | 점령된 자료실</title>
   <style>
     :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    [hidden] { display: none !important; }
     body { margin: 0; min-height: 100vh; background: #101a28; color: #ecf4ff; }
     main { max-width: 760px; margin: 0 auto; padding: 44px 22px 64px; }
     .eyebrow { color: #8ad8df; font-size: 14px; font-weight: 700; letter-spacing: .08em; }
@@ -57,7 +58,7 @@
         <button type="submit">로그인</button>
       </form>
       <div id="signed-in" class="signed-in" hidden>
-        <p>로그인됨: <strong id="signed-in-email"></strong></p>
+        <p hidden>로그인됨: <strong id="signed-in-email"></strong></p>
         <button id="logout" type="button">로그아웃</button>
       </div>
       <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
@@ -78,7 +79,7 @@
       </form>
       <p id="note-status" class="note-status" role="status" aria-live="polite"></p>
     </section>
-    <ul id="notes" aria-live="polite"><li>가상 자료를 불러오는 중입니다.</li></ul>
+    <ul id="notes" aria-live="polite" hidden><li>가상 자료를 불러오는 중입니다.</li></ul>
   </main>
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.117.2';
@@ -94,6 +95,7 @@
     const authStatus = document.querySelector('#auth-status');
     const anonymousNotice = document.querySelector('#anonymous-notice');
     const noteEditor = document.querySelector('#note-editor');
+    const notesList = document.querySelector('#notes');
     const noteForm = document.querySelector('#note-form');
     const noteId = document.querySelector('#note-id');
     const noteTitle = document.querySelector('#note-title');
@@ -112,6 +114,7 @@
       anonymousNotice.hidden = Boolean(email);
       authStatus.hidden = Boolean(email);
       noteEditor.hidden = !email;
+      notesList.hidden = !email;
       if (!email) resetNoteEditor();
     }
 
