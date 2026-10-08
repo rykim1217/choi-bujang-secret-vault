@@ -38,6 +38,7 @@ export default async function handler(request, response) {
       .from('vault_notes')
       .select('id, title, content')
       .eq('id', id)
+      .eq('owner_id', context.principal.userId)
       .maybeSingle();
     if (error) return response.status(502).json({ error: 'NOTE_LOOKUP_FAILED' });
     if (!data) return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
@@ -49,14 +50,32 @@ export default async function handler(request, response) {
     if (!input || !validText(input.title) || !validText(input.body)) {
       return response.status(400).json({ error: 'INVALID_NOTE' });
     }
+
+    const { data: existing, error: existingError } = await context.supabase
+      .from('vault_notes')
+      .select('id, owner_id')
+      .eq('id', id)
+      .maybeSingle();
+    if (existingError) return response.status(502).json({ error: 'NOTE_LOOKUP_FAILED' });
+    if (!existing || existing.owner_id !== context.principal.userId) {
+      return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
+    }
+
     const { data, error } = await context.supabase
       .from('vault_notes')
-      .update({ title: input.title, content: input.body })
+      .update({
+        title: input.title,
+        content: input.body,
+        owner_id: context.principal.userId,
+      })
       .eq('id', id)
-      .select('id, title, content')
+      .eq('owner_id', context.principal.userId)
+      .select('id, title, content, owner_id')
       .maybeSingle();
     if (error) return response.status(502).json({ error: 'NOTE_UPDATE_FAILED' });
-    if (!data) return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
+    if (!data || data.owner_id !== context.principal.userId) {
+      return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
+    }
     return response.status(200).json(formatNote(data));
   }
 
@@ -64,6 +83,7 @@ export default async function handler(request, response) {
     .from('vault_notes')
     .delete()
     .eq('id', id)
+    .eq('owner_id', context.principal.userId)
     .select('id')
     .maybeSingle();
   if (error) return response.status(502).json({ error: 'NOTE_DELETE_FAILED' });
