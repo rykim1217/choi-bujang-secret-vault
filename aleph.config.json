@@ -11,7 +11,8 @@
   },
   "allowedRoutes": [
     "GET /api/my/notes",
-    "GET /api/notes/:id"
+    "GET /api/notes/:id",
+    "GET /notes/:id"
   ],
   "originalApiUrl": "https://twlexezngmyrssrebduw.supabase.co/rest/v1/vault_notes",
   "restoreRoute": null

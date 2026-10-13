@@ -44,7 +44,7 @@ test('자기 전용 목록과 자료 ID가 있는 개별 메모 GET만 notes 구
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7',
     route: 'GET /notes/:id',
-  }), null);
+  }), RESOURCE_IDS.notes);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/notes/opaque-note-7',
     route: 'GET /api/notes/:id',
@@ -59,6 +59,11 @@ test('자기 전용 목록과 자료 ID가 있는 개별 메모 GET만 notes 구
   }));
   assert.equal(ownListResponse.decision, 'allow');
   assert.equal(ownListResponse.reasonCode, 'approved');
+  const enginePathResponse = await decide(request({
+    path: '/notes/opaque-note-7', route: 'GET /notes/:id',
+  }));
+  assert.equal(enginePathResponse.decision, 'allow');
+  assert.equal(enginePathResponse.reasonCode, 'approved');
   const listResponse = await decide(request({
     path: '/api/notes', route: 'GET /api/notes',
   }));
@@ -76,7 +81,7 @@ test('모호한 메모 전체 목록과 화면 경로는 자료 구역으로 허
   }), null);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7', route: 'GET /notes/:id',
-  }), null);
+  }), RESOURCE_IDS.notes);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/notes/opaque-note-7', route: 'GET /api/notes/:id',
   }), RESOURCE_IDS.notes);
