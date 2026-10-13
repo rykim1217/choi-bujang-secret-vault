@@ -1,4 +1,5 @@
 import { formatNote, getAuthenticatedContext, requireSameOrigin } from '../notes.js';
+import { storedOwnerMatches } from '../../src/resource-access.mjs';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 
@@ -57,9 +58,10 @@ export default async function handler(request, response) {
       .from('vault_notes')
       .select('id, owner_id')
       .eq('id', id)
+      .eq('owner_id', context.principal.userId)
       .maybeSingle();
     if (existingError) return response.status(502).json({ error: 'NOTE_LOOKUP_FAILED' });
-    if (!existing || existing.owner_id !== context.principal.userId) {
+    if (!storedOwnerMatches(existing, 'owner_id', context.principal.userId)) {
       return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
     }
 
@@ -75,7 +77,7 @@ export default async function handler(request, response) {
       .select('id, title, content, owner_id')
       .maybeSingle();
     if (error) return response.status(502).json({ error: 'NOTE_UPDATE_FAILED' });
-    if (!data || data.owner_id !== context.principal.userId) {
+    if (!storedOwnerMatches(data, 'owner_id', context.principal.userId)) {
       return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
     }
     return response.status(200).json(formatNote(data));
