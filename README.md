@@ -1,6 +1,6 @@
 # BYTE BACK 방어전 시작 틀 R5
 
-이 저장소는 1단계에서 학생 본인이 GitHub 저장소와 Vercel 배포를 만드는 출발점입니다. 2단계에서 가상 메모를 보호하고, 3단계 「진짜 로그인을 붙입니다」에서 Supabase Auth 로그인과 로그인 사용자용 메모 기능을 연결했으며, 4단계 「로그인해도 내 자료만 보이게 합니다」에서 메모 소유자 검사를 추가했습니다. 5단계 「자료 요청을 서버 한곳으로 모읍니다」에서 로그인과 자료 요청을 Vercel 서버 함수로 모았습니다. 실제 학생 자료, 토큰, 비밀키를 넣지 마세요.
+이 저장소는 1단계에서 학생 본인이 GitHub 저장소와 Vercel 배포를 만드는 출발점입니다. 2단계에서 가상 메모를 보호하고, 3단계 「진짜 로그인을 붙입니다」에서 Supabase Auth 로그인과 로그인 사용자용 메모 기능을 연결했으며, 4단계 「로그인해도 내 자료만 보이게 합니다」에서 메모 소유자 검사를 추가했습니다. 5단계 「자료 요청을 서버 한곳으로 모읍니다」에서 로그인과 자료 요청을 Vercel 서버 함수로 모았고, 6단계 「등록한 기기만 자료실에 들어옵니다」에서 등록된 기기만 판정기를 통과하도록 했습니다. 실제 학생 자료, 토큰, 비밀키를 넣지 마세요.
 
 ## 학생이 하는 일: 세 걸음
 
@@ -43,7 +43,7 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 `$deployUrl`에는 실제 Vercel 주소를 확인해 넣습니다. GitHub의 과거 공개 커밋·브랜치·태그와 Vercel의 과거 공개 배포 URL도 같은 방식으로 확인합니다. 옛 공개 커밋이나 옛 배포가 남아 있거나 메모 문장을 계속 제공하는 동안에는 과거 노출이 해소됐다고 쓰지 않습니다. 현재 `origin/main`과 현재 배포가 깨끗한 것은 과거 노출 해소의 증명이 아닙니다.
 
-`aleph.config.json`의 `step`은 현재 구현에 맞춰 5이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
+`aleph.config.json`의 `step`은 현재 구현에 맞춰 6이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 4단계 저장점
 
@@ -58,6 +58,17 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 `aleph.config.json`은 `step: 5`, 원본 Supabase Data API `originalApiUrl`, `/api/auth`와 `/api/notes` 관련 `allowedRoutes`를 기록합니다. production 커밋 `898fe84`에서 `/aleph.json`은 HTTP 200과 `step: 5`, 루트 응답은 `nosniff`, 원본 Data API의 공개 키 직접 요청은 HTTP 401로 확인했습니다. production 정적 파일에서 Supabase 공개 키·서버 전용 키·seed marker는 검색되지 않았습니다.
 
 로컬 확인은 `npm run build -- --local`, `npm run test:r5`, `npm run test:package`로 수행합니다. bundle과 실제 제출 묶음 생성은 이 저장점 이후 별도로 실행합니다.
+
+## 6단계 저장점
+
+현재 작동하는 기능은 `request.deviceRegistered`가 정확히 `true`인 요청만 `allow`와 `approved`로 허용하는 `device_registered` 규칙입니다. 값이 `false`이거나 없으면 `deny`와 `device_not_registered`로 거부하며, 기존 로그인·소유자 검사·자료 API 기능은 유지합니다. 미등록 기기 공격의 실제 확인은 심판이 맡습니다.
+
+추가로 설치할 접속 프로그램 없이 저장소 루트의 터미널에서 `npm run decider:test`를 실행합니다. 다음 두 줄이 순서대로 나와야 합니다.
+
+1. `통과 · 등록 기기의 정상 요청`: 등록 기기 요청이 `allow`로 처리됩니다.
+2. `통과 · 미등록 기기의 가상 요청`: `deviceRegistered: false` 요청이 `deny`와 `device_not_registered`로 처리되는지 확인합니다.
+
+마지막 안내 문구처럼 이 명령은 가상 요청 연습이며 심판 통과 증거가 아닙니다.
 
 ## 보너스 xdr-01 저장점
 
