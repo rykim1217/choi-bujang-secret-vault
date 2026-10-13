@@ -1,0 +1,19 @@
+{
+  "schema": "aleph.practice.note-restore.v1",
+  "purpose": "training_only",
+  "status": "candidate",
+  "createdAt": "2026-10-13T17:48:40.352+09:00",
+  "source": {
+    "type": "synthetic_fixture",
+    "derivedFromGitCommit": "f780b661665ad8a33c134035acf06699e46b8f0f",
+    "historicalOperationalBackup": false,
+    "description": "실제 운영 자료나 침해 전 백업이 아닌 로컬 실습용 단일 B 메모 사본"
+  },
+  "target": {
+    "id": "b0000000-0000-4000-8000-000000000001",
+    "ownerId": "b0000000-0000-4000-8000-000000000002",
+    "contentSha256": "c473195d62f97719eac84a8232405c422cacc6c433348b4ee3bff14fe784853b",
+    "canonicalization": "UTF-8 JSON.stringify({title,content})"
+  },
+  "snapshotPath": "notes/note-b.json"
+}

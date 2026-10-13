@@ -43,7 +43,7 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 `$deployUrl`에는 실제 Vercel 주소를 확인해 넣습니다. GitHub의 과거 공개 커밋·브랜치·태그와 Vercel의 과거 공개 배포 URL도 같은 방식으로 확인합니다. 옛 공개 커밋이나 옛 배포가 남아 있거나 메모 문장을 계속 제공하는 동안에는 과거 노출이 해소됐다고 쓰지 않습니다. 현재 `origin/main`과 현재 배포가 깨끗한 것은 과거 노출 해소의 증명이 아닙니다.
 
-`aleph.config.json`의 `step`은 현재 구현에 맞춰 9이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
+`aleph.config.json`의 현재 제출 준비 `step`은 10이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 4단계 저장점
 
@@ -89,6 +89,43 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 현재 작동하는 기능은 9단계 가상 사건 계약의 `at`, `method`, `identity.sub`만 입력으로 정규화·검증하고, 같은 가명 주체의 `GET` 사건이 어느 10분 구간에서든 120건을 넘을 때 `{ action: 'propose_revocation', reasonCode: 'burst_read', subject }`를 반환하는 것입니다. 정확히 120건, 다른 주체의 사건 합산, 10분 밖으로 분산된 사건은 탐지하지 않으며 네트워크·기기 등 계약 밖의 필드는 읽지 않습니다. 회수 API와 실제 권한 변경은 연결하지 않았고, 입력의 메모 내용·토큰·실명은 저장하거나 출력하지 않습니다.
 
 저장소 루트에서 `npm run detect:test`를 실행해 정상 조회·경계값·사용자 분리·시간 창 가상 사건을 연습합니다. 이 명령은 실제 반 엔진 사건 전달·접속 회수·심판 판정의 증거가 아닙니다. 저장점 제출 묶음은 커밋 후 `npm run bundle`로 만들며, `bundle-notes.json`과 `artifacts/submission.json`은 커밋하지 않습니다.
+
+## 10단계 제작 1~2 실습용 정책 기준본과 복원 사전 확인
+
+`policy-baseline/`은 `f780b661665ad8a33c134035acf06699e46b8f0f`에서 추출한 7개 정책·계약 파일과 SHA-256 매니페스트입니다. 로컬 시험 결과와 원본 커밋 내용을 다시 확인한 뒤 생성했으며, 침해 이전에 보관된 백업이나 운영 복구 자료가 아닙니다.
+
+`npm run policy:baseline -- compare`는 기준본 디렉터리·매니페스트·7개 파일의 SHA-256과 원본 커밋을 먼저 검증한 뒤, 기준본과 현재 시험 정책의 변경 파일·항목만 출력합니다. `restore-preview`도 같은 사전 확인만 수행합니다. 기준본이 없거나 검증에 실패하면 비교와 복원을 중단합니다.
+
+`npm run policy:baseline -- restore --confirm <원본 커밋 전체 해시>`는 미리보기 뒤 대화형으로 `RESTORE`를 다시 입력해야만 시험 정책 범위의 변경 파일을 복원합니다. 운영 정책·Supabase·Vercel·자료·감사 기록은 대상이 아니며, 실제 복원은 이 저장점에서 실행하지 않았습니다. `npm run policy:restore-check`는 A의 정상 판정과 B의 A 자료 소유자 불일치 거부를 로컬 fixture로 확인하며, 실제 API·Supabase 교차 사용자 시험은 미실행입니다.
+
+2026-10-13 로컬 확인 결과: 기준본 SHA-256·원본 커밋 검증 통과, `compare`와 `restore-preview`에서 변경 파일·항목 0개, `policy:restore-check`에서 A 정상 요청 `allow`·B의 A 자료 소유자 검사 `deny`, 기존 8단계 정책 시험 8/8 통과, 복원 실행은 미실행입니다. 운영 API·Supabase·Vercel·심판 판정 시험과 제출 묶음 생성도 미실행입니다.
+
+### 10단계 제작 3: 단일 실습 메모 복원
+
+현재 저장소에는 검증된 운영 메모 사본이 없으므로 `practice-restore/`에 생성 시각과 `f780b661665ad8a33c134035acf06699e46b8f0f`를 출처로 적은 synthetic B 메모 한 건만 보관합니다. 이것은 침해 이전 백업이나 실제 학생 자료가 아닙니다. 매니페스트의 고정 ID·B 소유자·`UTF-8 JSON.stringify({title,content})` SHA-256을 서버가 매 요청마다 다시 확인합니다.
+
+서비스 이름은 `note_restore`, 복원 POST 경로는 `POST /api/restore/notes/:id`입니다. 서버는 Supabase 인증 principal이 학생 B인지 확인하고, 고정된 B 메모 ID·빈 요청 본문·동일 소유자 행만 대상으로 삼습니다. 쓰기 후에도 ID·소유자·내용 SHA-256을 다시 대조하며, 다른 메모·다른 소유자·공지·운영 정책은 대상이 아닙니다.
+
+`npm run policy:restore-check`는 로컬 fixture에서 A의 정상 판정과 B가 A 메모를 소유하지 못하는 결과를 확인합니다. 실제 복원 POST, Supabase 데이터 변경, Vercel 배포, 운영 교차 사용자 시험은 미실행입니다.
+
+### 10단계 제작 4: 복원 후 1~9단계 회귀 확인 순서
+
+정책 기준본 복원과 메모 복원을 승인해 실행한 뒤에는 아래 순서로 기존 방어 기능을 다시 확인합니다. 복원 전·후의 기준본과 메모 사본 검증이 먼저이며, 복원 대상 외의 자료와 감사 기록은 확인 과정에서 수정하지 않습니다.
+
+1. 정책·사본 검증: `npm run policy:baseline -- compare`로 기준본 매니페스트·7개 정책 파일·원본 커밋의 SHA-256을 확인하고, `node --test test/practice-note-restore.test.mjs`로 실습용 메모 사본의 ID·소유자·내용 해시와 복원 권한 경계를 확인합니다. 정책 복원 후에는 같은 `compare`를 다시 실행해 예상하지 않은 정책 변경이 없는지 확인합니다.
+2. 기존 로컬 회귀: `npm run build -- --local`, `npm run test:r5`, `npm run test:package` 순서로 정적 빌드·배포 식별자·패키지 기준표를 확인합니다. 이 명령들은 로컬 확인이며 운영 배포나 심판 판정을 증명하지 않습니다.
+3. 6단계 등록 기기: `npm run decider:test`에서 등록 기기 정상 요청이 `allow`·`approved`, 미등록 기기 요청이 `deny`·`device_not_registered`인지 확인합니다.
+4. 7단계 접속 신호와 추가 확인: `npm run fixture:7`에서 정상 신호 요청이 `allow`, 평소와 다른 시각·네트워크·대량 읽기가 결합된 요청이 `step_up`인지 확인합니다. 실제 엔진의 신호 전달·재로그인·권한 변경은 별도 운영 계약이 없어 미실행입니다.
+5. 8단계 자료 경로·소유자: `node --test test/stage8-resource-policy.test.mjs`에서 자기 자료 경로는 허용되고, 모호한 목록·공지 구역·쓰기·알 수 없는 경로는 거부되는지 확인합니다. 실제 A 토큰으로 정상 자료 요청을 허용하고 B 토큰으로 A 자료 GET·PUT·DELETE를 거부하는 교차 사용자 시험은 미실행입니다.
+6. 인증 없는 요청: 실제 배포 주소의 `/api/notes`에 인증 없이 요청해 JSON `401` 또는 `403`으로 거부되는지 확인합니다. 현재 저장소에서는 운영 주소에 이 요청을 다시 보내지 않았으므로 미실행입니다.
+7. A·B 복원 후 자료 확인: 공식적으로 확인된 A·B 인증과 복구 대상 매핑이 제공된 경우에만, A의 정상 자료 요청 허용 → B의 A 자료 접근 거부 → 인증 없는 요청 거부 순서로 확인합니다. 현재 제작3의 synthetic B UUID는 실제 Supabase 시험 계정 B와 연결되지 않았고 심판 B 매핑도 미확인하므로, 복원 POST와 이 운영 시험은 미실행입니다.
+8. 9단계 이상 탐지: `npm run detect:test`에서 정상 조회, 120건 경계, 사용자 분리, 10분 창 분리를 확인하고 120건을 초과한 같은 주체의 조회에만 `propose_revocation`이 나오는지 확인합니다. 실제 반 엔진 사건 전달·접속 회수·심판 판정은 미실행입니다.
+
+현재까지 실행한 로컬 확인은 제작1~3에 기록된 기준본 비교, 정책 복원 fixture, 패키지·배포 식별자·8단계 경로·메모 사본 단위 시험과 `decider:test`, `fixture:7`, `detect:test`입니다. 위 순서 중 실제 정책 복원, 실제 메모 복원 POST, Supabase 데이터 확인, A/B 교차 사용자 요청, 인증 없는 배포 요청, 운영 신호·기기·탐지 연동은 미실행입니다.
+
+10단계 제출 준비에서 실제로 확인한 범위는 기준본 SHA-256·원본 커밋 검증, 정책 복원 미리보기, `node --test test/practice-note-restore.test.mjs`의 로컬 복구 사본·권한 경계 시험입니다. 실제 정책 복원, 실제 메모 복원 POST, 심판 인증, 운영 공격 차단은 성공으로 기록하지 않으며 모두 미실행입니다.
+
+제작3의 미해결 사항도 유지합니다. `practice-restore/`는 실제 침해 전 백업이 아닌 synthetic 자료이며, 심판 B 계정과 실제 Supabase 소유자·메모 ID의 공식 매핑이 없습니다. 제출 설정은 `step: 10`, 기존 3개 허용 경로를 유지한 `POST /api/restore/notes/:id` 추가, `restoreRoute: "POST /api/restore/notes/:id"`로 실제 `api/restore/notes/[id].js` 경로와 일치시켰습니다. 다만 이 표기가 공식 심판 제출 형식인지 여부는 여전히 미확인입니다. 공식 계약이 확인되기 전에는 고정 UUID를 실제 계정으로 간주하거나 운영 복원을 실행하지 않습니다.
 
 ## 보너스 xdr-01 저장점
 
