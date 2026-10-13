@@ -32,11 +32,11 @@ function request(overrides = {}) {
   };
 }
 
-test('자료 ID가 있는 개별 메모 GET만 notes 구역으로 허용된다', async () => {
+test('자기 전용 목록과 자료 ID가 있는 개별 메모 GET만 notes 구역으로 허용된다', async () => {
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/my/notes',
     route: 'GET /api/my/notes',
-  }), null);
+  }), RESOURCE_IDS.notes);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/notes',
     route: 'GET /api/notes',
@@ -54,6 +54,11 @@ test('자료 ID가 있는 개별 메모 GET만 notes 구역으로 허용된다',
   }));
   assert.equal(response.decision, 'allow');
   assert.equal(response.reasonCode, 'approved');
+  const ownListResponse = await decide(request({
+    path: '/api/my/notes', route: 'GET /api/my/notes',
+  }));
+  assert.equal(ownListResponse.decision, 'allow');
+  assert.equal(ownListResponse.reasonCode, 'approved');
   const listResponse = await decide(request({
     path: '/api/notes', route: 'GET /api/notes',
   }));
@@ -65,9 +70,9 @@ test('자료 ID가 있는 개별 메모 GET만 notes 구역으로 허용된다',
   assert.equal(updateResponse.reasonCode, 'write_not_allowed');
 });
 
-test('메모 전체 목록과 화면 경로는 자료 구역으로 허용하지 않는다', () => {
+test('모호한 메모 전체 목록과 화면 경로는 자료 구역으로 허용하지 않는다', () => {
   assert.equal(identifyResource({
-    service: 'notes', method: 'GET', path: '/api/my/notes', route: 'GET /api/my/notes',
+    service: 'notes', method: 'GET', path: '/api/notes', route: 'GET /api/notes',
   }), null);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7', route: 'GET /notes/:id',
