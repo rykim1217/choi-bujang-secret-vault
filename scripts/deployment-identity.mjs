@@ -3,15 +3,28 @@ const REPO = /^[A-Za-z0-9._-]{1,100}$/u;
 const SHA = /^[a-f0-9]{40}$/iu;
 const HOST = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.vercel\.app$/iu;
 
+function configuredPublicAppUrl(config) {
+  try {
+    const url = new URL(config?.publicAppUrl);
+    if (url.protocol !== 'https:' || !HOST.test(url.hostname)
+        || url.pathname !== '/' || url.search || url.hash) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
 export function deploymentIdentity(env, config) {
   const owner = env.VERCEL_GIT_REPO_OWNER;
   const repo = env.VERCEL_GIT_REPO_SLUG;
   const commit = env.VERCEL_GIT_COMMIT_SHA;
-  const host = env.VERCEL_URL;
+  const deploymentHost = env.VERCEL_URL;
+  const publicAppUrl = configuredPublicAppUrl(config);
   if (env.VERCEL_GIT_PROVIDER !== 'github' || !OWNER.test(owner || '')
       || !REPO.test(repo || '') || repo === '.' || repo === '..'
       || repo.toLowerCase().endsWith('.git') || !SHA.test(commit || '')
-      || !HOST.test(host || '') || !Number.isInteger(config?.step) || config.step < 1 || config.step > 12
+      || !HOST.test(deploymentHost || '') || !publicAppUrl
+      || !Number.isInteger(config?.step) || config.step < 1 || config.step > 12
       || typeof config.judgeIssuer !== 'string'
       || !/^https:\/\/[a-z0-9-]+\.up\.railway\.app\/defense\/judge$/iu.test(config.judgeIssuer)
       || typeof config.sampleMarker !== 'string'
@@ -23,7 +36,7 @@ export function deploymentIdentity(env, config) {
     step: config.step,
     repoUrl: `https://github.com/${owner.toLowerCase()}/${repo.toLowerCase()}`,
     commit: commit.toLowerCase(),
-    publicAppUrl: `https://${host.toLowerCase()}`,
+    publicAppUrl,
     judgeIssuer: config.judgeIssuer,
   };
 }

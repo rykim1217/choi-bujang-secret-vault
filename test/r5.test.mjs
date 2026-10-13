@@ -23,11 +23,14 @@ test('build identity uses Vercel Git and deployment metadata', () => {
     step: 1,
     repoUrl: 'https://github.com/student-a/aleph-defense',
     commit: 'a'.repeat(40),
-    publicAppUrl: 'https://student-defense-123.vercel.app',
+    publicAppUrl: config.publicAppUrl,
     judgeIssuer: config.judgeIssuer,
   });
   assert.throws(() => deploymentIdentity({ ...env, VERCEL_GIT_PROVIDER: undefined }, config));
   assert.throws(() => deploymentIdentity({ ...env, VERCEL_GIT_COMMIT_SHA: 'short' }, config));
+  assert.equal(deploymentIdentity({ ...env, VERCEL_URL: 'protected-deployment.vercel.app' }, config).publicAppUrl,
+    config.publicAppUrl);
+  assert.throws(() => deploymentIdentity(env, { ...config, publicAppUrl: 'http://student-defense.vercel.app' }));
 });
 
 test('first attack check reads public data.json without credentials', async () => {
