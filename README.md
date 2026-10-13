@@ -70,6 +70,12 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 마지막 안내 문구처럼 이 명령은 가상 요청 연습이며 심판 통과 증거가 아닙니다.
 
+## 7단계 저장점
+
+현재 작동하는 기능은 엔진이 전달한 `signals`의 출처·지역·네트워크·시각과 `recentEvents` 형식을 검사하고, 누락되거나 출처가 불명확한 값은 정상값으로 채우지 않고 `signals_unverified`로 거부하는 것입니다. 등록 기기 검사를 유지하며, 평소와 다른 시각·처음 보는 네트워크·대량 읽기 사건이 함께 오면 지역 하나만으로 차단하지 않고 `step_up_required` 추가 확인을 요구합니다. 엔진이 확인한 `stepUp.verified`와 0~900초의 `authAgeSeconds`가 있는 재판정만 허용합니다.
+
+현재 계약에는 같은 로그인 주체의 새 로그인 시각을 자료 API가 확인했다는 운영 연결이 없으므로 실제 자료 차단과 재로그인은 미실행입니다. `npm run fixture:7`은 정상 사건은 `allow`, 복합 이상 사건은 `step_up`인지 확인하고, `npm run decider:test`는 등록·미등록 기기와 재확인 가상 요청을 연습합니다. 두 명령 모두 심판 판정이나 운영 연결 증거가 아닙니다.
+
 ## 보너스 xdr-01 저장점
 
 `xdr/brute-force/read-alerts.mjs`는 원본 경보에서 시각·출발 주소·계정·규칙 수준·설명만 읽고, `patterns.json`과 `decide.mjs`는 MITRE ATT&CK T1110 근거의 두 무차별 대입 패턴을 판정합니다. `decide.mjs`는 판단만 반환하며, `respond.mjs`는 차단 후보에만 15분 만료·근거 경보 번호가 있는 ZTNA 거부 규칙 후보를 만들고 `xdr/alerts.log`에 민감한 식별값 없이 한 줄 알림을 남깁니다. 기존 `src/decider.mjs` 규칙은 변경하지 않습니다.
