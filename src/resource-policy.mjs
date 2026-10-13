@@ -26,6 +26,11 @@ export function identifyResource({ service, method, path, route, queryLength } =
     return RESOURCE_IDS.notes;
   }
 
+  if (service === 'notes' && method === 'GET' && path === '/notes'
+      && exactRoute(method, path, route)) {
+    return RESOURCE_IDS.notes;
+  }
+
   if (service === 'notes' && NOTE_ITEM_METHODS.has(method)
       && /^\/api\/notes\/([^/]+)$/u.test(path)
       && UUID.test(path.slice('/api/notes/'.length))
