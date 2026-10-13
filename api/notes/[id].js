@@ -39,12 +39,14 @@ export default async function handler(request, response) {
   if (request.method === 'GET') {
     const { data, error } = await context.supabase
       .from('vault_notes')
-      .select('id, title, content')
+      .select('id, title, content, owner_id')
       .eq('id', id)
       .eq('owner_id', context.principal.userId)
       .maybeSingle();
     if (error) return response.status(502).json({ error: 'NOTE_LOOKUP_FAILED' });
-    if (!data) return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
+    if (!storedOwnerMatches(data, 'owner_id', context.principal.userId)) {
+      return response.status(404).json({ error: 'NOTE_NOT_FOUND' });
+    }
     return response.status(200).json(formatNote(data));
   }
 
