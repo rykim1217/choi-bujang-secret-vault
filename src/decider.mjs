@@ -1,6 +1,6 @@
 // ALEPH SDP 엔진이 확인한 요청만 받는 학생 판정기입니다.
 // 요청 본문의 role, 기기 키, 토큰을 별도로 믿거나 저장하지 마세요.
-import { identifyResource } from './resource-policy.mjs';
+import { identifyResource, RESOURCE_IDS } from './resource-policy.mjs';
 
 export const RULE_IDS = Object.freeze([
   'device_registered',
@@ -114,13 +114,25 @@ export async function decide(request) {
     };
   }
 
-  if (!identifyResource(request)) {
+  const resourceId = identifyResource(request);
+  if (!resourceId) {
     return {
       schema: 'aleph.decision.v1',
       requestId: request.requestId,
       decision: 'deny',
       reasonCode: 'resource_path_unrecognized',
       ruleIds: [RULE_IDS[3]],
+    };
+  }
+
+  // 공지·강사 자료는 별도 구역으로 식별하되, 이 판정기에서는 메모 읽기만 연다.
+  if (resourceId !== RESOURCE_IDS.notes) {
+    return {
+      schema: 'aleph.decision.v1',
+      requestId: request.requestId,
+      decision: 'deny',
+      reasonCode: 'resource_path_unrecognized',
+      ruleIds: [RULE_IDS[4]],
     };
   }
 

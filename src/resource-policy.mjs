@@ -6,11 +6,10 @@ export const RESOURCE_IDS = Object.freeze({
 
 const PATH_SEGMENT = /^[A-Za-z0-9._~-]+$/u;
 const ROUTE_SEGMENT = /^(?:[A-Za-z0-9._~-]+|:id)$/u;
-const NOTE_COLLECTION_METHODS = new Set(['GET']);
 const NOTE_ITEM_METHODS = new Set(['GET', 'PUT', 'DELETE']);
-const NOTE_COLLECTION_PATHS = new Set(['api/my/notes']);
-const NOTE_ITEM_PATHS = new Set(['notes/:id', 'api/notes/:id']);
+const NOTE_ITEM_PATHS = new Set(['api/notes/:id']);
 const ANNOUNCEMENT_ITEM_PATHS = new Set(['announcements/:id', 'api/announcements/:id']);
+const ANNOUNCEMENT_ITEM_METHODS = new Set(['GET', 'PUT']);
 
 function routeParts(route) {
   if (typeof route !== 'string') return null;
@@ -56,18 +55,13 @@ export function identifyResource({ service, method, path, route } = {}) {
   const segments = pathMatchesRoute(method, path, route);
   if (!segments) return null;
 
-  if (service === 'notes' && NOTE_COLLECTION_PATHS.has(pathKey(segments))
-      && NOTE_COLLECTION_METHODS.has(method)) {
-    return RESOURCE_IDS.notes;
-  }
-
   if (service === 'notes' && NOTE_ITEM_PATHS.has(pathKey(segments))
       && NOTE_ITEM_METHODS.has(method)) {
     return RESOURCE_IDS.notes;
   }
 
   if (service === 'announcements' && ANNOUNCEMENT_ITEM_PATHS.has(pathKey(segments))
-      && method === 'PUT') {
+      && ANNOUNCEMENT_ITEM_METHODS.has(method)) {
     return RESOURCE_IDS.instructorAnnouncements;
   }
 

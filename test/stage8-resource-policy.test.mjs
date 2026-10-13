@@ -18,8 +18,8 @@ function request(overrides = {}) {
     deviceId: 'abcdef0123456789',
     service: 'notes',
     method: 'GET',
-    path: '/notes/opaque-note-7',
-    route: 'GET /notes/:id',
+    path: '/api/notes/opaque-note-7',
+    route: 'GET /api/notes/:id',
     queryLength: 0,
     querySha256: emptyHash,
     at: '2020-01-01T00:00:00.000Z',
@@ -32,11 +32,11 @@ function request(overrides = {}) {
   };
 }
 
-test('자기 목록과 개별 메모 읽기만 notes 구역으로 허용된다', async () => {
+test('자료 ID가 있는 개별 메모 GET만 notes 구역으로 허용된다', async () => {
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/my/notes',
     route: 'GET /api/my/notes',
-  }), RESOURCE_IDS.notes);
+  }), null);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/notes',
     route: 'GET /api/notes',
@@ -44,13 +44,13 @@ test('자기 목록과 개별 메모 읽기만 notes 구역으로 허용된다',
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7',
     route: 'GET /notes/:id',
-  }), RESOURCE_IDS.notes);
+  }), null);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/notes/opaque-note-7',
     route: 'GET /api/notes/:id',
   }), RESOURCE_IDS.notes);
   const response = await decide(request({
-    path: '/notes/opaque-note-7', route: 'GET /notes/:id',
+    path: '/api/notes/opaque-note-7', route: 'GET /api/notes/:id',
   }));
   assert.equal(response.decision, 'allow');
   assert.equal(response.reasonCode, 'approved');
@@ -65,13 +65,36 @@ test('자기 목록과 개별 메모 읽기만 notes 구역으로 허용된다',
   assert.equal(updateResponse.reasonCode, 'write_not_allowed');
 });
 
-test('자기 목록 경로와 개별 메모 경로가 구조에 맞으면 허용된다', () => {
+test('메모 전체 목록과 화면 경로는 자료 구역으로 허용하지 않는다', () => {
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/api/my/notes', route: 'GET /api/my/notes',
-  }), RESOURCE_IDS.notes);
+  }), null);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7', route: 'GET /notes/:id',
+  }), null);
+  assert.equal(identifyResource({
+    service: 'notes', method: 'GET', path: '/api/notes/opaque-note-7', route: 'GET /api/notes/:id',
   }), RESOURCE_IDS.notes);
+});
+
+test('공지·강사 자료 구역은 식별되지만 판정기에서는 명시적으로 거부한다', async () => {
+  assert.equal(identifyResource({
+    service: 'announcements', method: 'GET', path: '/api/announcements/notice-7',
+    route: 'GET /api/announcements/:id',
+  }), RESOURCE_IDS.instructorAnnouncements);
+  const response = await decide(request({
+    service: 'announcements', path: '/api/announcements/notice-7',
+    route: 'GET /api/announcements/:id',
+  }));
+  assert.equal(response.decision, 'deny');
+  assert.equal(response.reasonCode, 'resource_path_unrecognized');
+  assert.deepEqual(response.ruleIds, ['resource_zone']);
+  const writeResponse = await decide(request({
+    service: 'announcements', method: 'PUT', path: '/api/announcements/notice-7',
+    route: 'PUT /api/announcements/:id',
+  }));
+  assert.equal(writeResponse.decision, 'deny');
+  assert.equal(writeResponse.reasonCode, 'write_not_allowed');
 });
 
 test('export·중첩·알 수 없는 구역은 거부한다', async () => {
