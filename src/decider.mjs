@@ -8,6 +8,7 @@ export const RULE_IDS = Object.freeze([
   'step_up_required',
   'resource_path_exact',
   'resource_zone',
+  'write_not_allowed',
 ]);
 
 const signalSources = new Set(['none', 'judge_fixture']);
@@ -88,6 +89,28 @@ export async function decide(request) {
       decision: 'deny',
       reasonCode: 'device_not_registered',
       ruleIds: [RULE_IDS[0]],
+    };
+  }
+
+  // The official request has no stored-owner or instructor-membership proof.
+  // Keep normal API CRUD available, but never grant a write from this policy.
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
+    return {
+      schema: 'aleph.decision.v1',
+      requestId: request.requestId,
+      decision: 'deny',
+      reasonCode: 'write_not_allowed',
+      ruleIds: [RULE_IDS[5]],
+    };
+  }
+
+  if (request.queryLength !== 0) {
+    return {
+      schema: 'aleph.decision.v1',
+      requestId: request.requestId,
+      decision: 'deny',
+      reasonCode: 'resource_path_unrecognized',
+      ruleIds: [RULE_IDS[3]],
     };
   }
 

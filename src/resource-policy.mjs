@@ -6,9 +6,9 @@ export const RESOURCE_IDS = Object.freeze({
 
 const PATH_SEGMENT = /^[A-Za-z0-9._~-]+$/u;
 const ROUTE_SEGMENT = /^(?:[A-Za-z0-9._~-]+|:id)$/u;
-const NOTE_COLLECTION_METHODS = new Set(['GET', 'POST']);
+const NOTE_COLLECTION_METHODS = new Set(['GET']);
 const NOTE_ITEM_METHODS = new Set(['GET', 'PUT', 'DELETE']);
-const NOTE_COLLECTION_PATHS = new Set(['notes', 'api/notes']);
+const NOTE_COLLECTION_PATHS = new Set(['api/my/notes']);
 const NOTE_ITEM_PATHS = new Set(['notes/:id', 'api/notes/:id']);
 const ANNOUNCEMENT_ITEM_PATHS = new Set(['announcements/:id', 'api/announcements/:id']);
 

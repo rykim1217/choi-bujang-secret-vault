@@ -4,9 +4,9 @@ import { test } from 'node:test';
 import { decide } from '../src/decider.mjs';
 import { storedOwnerMatches } from '../src/resource-access.mjs';
 import { identifyResource, RESOURCE_IDS } from '../src/resource-policy.mjs';
+import myNotesHandler from '../api/my/notes.js';
 
 const emptyHash = createHash('sha256').update('').digest('hex');
-const queryHash = createHash('sha256').update('page=1').digest('hex');
 
 function request(overrides = {}) {
   return {
@@ -20,8 +20,8 @@ function request(overrides = {}) {
     method: 'GET',
     path: '/notes/opaque-note-7',
     route: 'GET /notes/:id',
-    queryLength: 6,
-    querySha256: queryHash,
+    queryLength: 0,
+    querySha256: emptyHash,
     at: '2020-01-01T00:00:00.000Z',
     policyRevision: 0,
     deviceRegistered: true,
@@ -32,7 +32,15 @@ function request(overrides = {}) {
   };
 }
 
-test('계약 예시와 실제 API 접두사의 메모 GET은 notes 구역으로 허용된다', async () => {
+test('자기 목록과 개별 메모 읽기만 notes 구역으로 허용된다', async () => {
+  assert.equal(identifyResource({
+    service: 'notes', method: 'GET', path: '/api/my/notes',
+    route: 'GET /api/my/notes',
+  }), RESOURCE_IDS.notes);
+  assert.equal(identifyResource({
+    service: 'notes', method: 'GET', path: '/api/notes',
+    route: 'GET /api/notes',
+  }), null);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7',
     route: 'GET /notes/:id',
@@ -46,15 +54,20 @@ test('계약 예시와 실제 API 접두사의 메모 GET은 notes 구역으로 
   }));
   assert.equal(response.decision, 'allow');
   assert.equal(response.reasonCode, 'approved');
+  const listResponse = await decide(request({
+    path: '/api/notes', route: 'GET /api/notes',
+  }));
+  assert.equal(listResponse.decision, 'deny');
   const updateResponse = await decide(request({
     method: 'PUT', path: '/api/notes/opaque-note-7', route: 'PUT /api/notes/:id',
   }));
-  assert.equal(updateResponse.decision, 'allow');
+  assert.equal(updateResponse.decision, 'deny');
+  assert.equal(updateResponse.reasonCode, 'write_not_allowed');
 });
 
-test('정상 목록 GET과 API 접두사도 경로 구조가 맞으면 허용된다', () => {
+test('자기 목록 경로와 개별 메모 경로가 구조에 맞으면 허용된다', () => {
   assert.equal(identifyResource({
-    service: 'notes', method: 'GET', path: '/api/notes', route: 'GET /api/notes',
+    service: 'notes', method: 'GET', path: '/api/my/notes', route: 'GET /api/my/notes',
   }), RESOURCE_IDS.notes);
   assert.equal(identifyResource({
     service: 'notes', method: 'GET', path: '/notes/opaque-note-7', route: 'GET /notes/:id',
@@ -88,6 +101,20 @@ test('기기 등록과 7단계 추가 확인 규칙은 유지된다', async () =
   assert.equal(suspicious.decision, 'step_up');
 });
 
+test('소유권 증거가 없는 모든 쓰기와 쿼리 기능 선택은 거부한다', async () => {
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) {
+    const response = await decide(request({
+      method,
+      path: method === 'POST' ? '/api/notes' : '/api/notes/opaque-note-7',
+      route: method === 'POST' ? 'POST /api/notes' : `${method} /api/notes/:id`,
+    }));
+    assert.equal(response.decision, 'deny');
+    assert.equal(response.reasonCode, 'write_not_allowed');
+  }
+  const queryResponse = await decide(request({ queryLength: 1 }));
+  assert.equal(queryResponse.decision, 'deny');
+});
+
 test('자료 API는 저장된 소유자·강사와 검증된 주체가 일치할 때만 허용한다', () => {
   const ownerA = 'user-a';
   const ownerB = 'user-b';
@@ -95,4 +122,17 @@ test('자료 API는 저장된 소유자·강사와 검증된 주체가 일치할
   assert.equal(storedOwnerMatches({ owner_id: ownerB }, 'owner_id', ownerA), false);
   assert.equal(storedOwnerMatches({ instructor_id: ownerB }, 'instructor_id', ownerA), false);
   assert.equal(storedOwnerMatches({ instructor_id: ownerA }, 'instructor_id', ownerA), true);
+});
+
+test('자기 목록 별칭은 GET만 열고 기존 CRUD 경로와 분리된다', async () => {
+  const response = {
+    headers: new Map(),
+    setHeader(name, value) { this.headers.set(name, value); },
+    status(code) { this.code = code; return this; },
+    json(body) { this.body = body; return this; },
+  };
+  await myNotesHandler({ method: 'POST' }, response);
+  assert.equal(response.code, 405);
+  assert.equal(response.headers.get('Allow'), 'GET');
+  assert.equal(response.body.error, 'METHOD_NOT_ALLOWED');
 });
