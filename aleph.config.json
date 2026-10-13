@@ -10,12 +10,9 @@
     "jwksUrl": "https://twlexezngmyrssrebduw.supabase.co/auth/v1/.well-known/jwks.json"
   },
   "allowedRoutes": [
-    "GET /api/device-approval",
-    "POST /api/device-approval",
     "GET /api/my/notes",
     "GET /api/notes/:id",
-    "GET /notes/:id",
-    "POST /api/restore/notes/:id"
+    "GET /notes/:id"
   ],
   "originalApiUrl": "https://twlexezngmyrssrebduw.supabase.co/rest/v1/vault_notes",
   "restoreRoute": "POST /api/restore/notes/:id"
