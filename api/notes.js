@@ -10,6 +10,7 @@ import {
   setSessionCookies,
 } from '../src/auth-session.mjs';
 import { createLoginVerifier } from '../src/verify-login.mjs';
+import { formatResource, RESOURCE_IDS } from '../src/resource-policy.mjs';
 
 const config = JSON.parse(readFileSync(new URL('../aleph.config.json', import.meta.url), 'utf8'));
 let loginVerifier;
@@ -66,7 +67,7 @@ export function requireSameOrigin(request, response) {
 }
 
 export function formatNote(note) {
-  return { id: note.id, title: note.title, body: note.content };
+  return formatResource(RESOURCE_IDS.notes, { id: note.id, title: note.title, body: note.content });
 }
 
 function parseBody(request) {

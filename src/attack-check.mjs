@@ -17,7 +17,7 @@ function authHeaders(token, origin, json = false) {
 }
 
 export async function runAttackChecks(config) {
-  if (![1, 2, 3, 4, 5, 6, 7].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
+  if (![1, 2, 3, 4, 5, 6, 7, 8].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
   let app;
   try {
     app = new URL(config.publicAppUrl);
@@ -66,13 +66,19 @@ export async function runAttackChecks(config) {
       ? `비로그인 /api/notes 요청이 JSON 오류와 함께 거부됨 (HTTP ${apiResponse.status})`
       : `비로그인 /api/notes 요청이 보호되지 않음 또는 JSON 오류가 아님 (HTTP ${apiResponse.status})` });
 
-  if (config.step === 7) {
+  if ([7, 8].includes(config.step)) {
     attempts.push({ attackId: 'step_up_data_gate',
       expected: '추가 확인 전 자료가 반환되지 않고 새 로그인 뒤 요청이 다시 판정됨',
       observed: '미실행: 같은 로그인 주체의 새 로그인 시각을 확인하는 운영 계약과 자료 API 연결이 제공되지 않았습니다.' });
   }
 
-  if (![4, 5].includes(config.step)) return attempts;
+  if (config.step === 8) {
+    attempts.push({ attackId: 'resource_zone_direct_api',
+      expected: '다른 자원 구역과 알 수 없는 기능 경로가 자료 API에서 거부됨',
+      observed: '미실행: 강사 공지 시험 계정과 구역별 운영 요청 계약이 제공되지 않았습니다.' });
+  }
+
+  if (![4, 5, 8].includes(config.step)) return attempts;
 
   const ownerAToken = process.env.ALEPH_CHECK_OWNER_A_TOKEN;
   const ownerBToken = process.env.ALEPH_CHECK_OWNER_B_TOKEN;
