@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a28">
+  <link rel="manifest" href="/manifest.webmanifest">
   <title>BYTE BACK | 점령된 자료실</title>
   <style>
     :root { color-scheme: dark; font-family: system-ui, sans-serif; }
@@ -13,6 +15,14 @@
     h1 { margin: 16px 0; font-size: clamp(30px, 7vw, 48px); line-height: 1.2; }
     p { font-size: 17px; line-height: 1.7; color: #bfd0e5; }
     .notice { margin: 26px 0; padding: 18px; border: 1px solid #d07384; border-radius: 14px; color: #ffe3e8; background: #612a3544; }
+    .app-status { margin: 26px 0; padding: 18px; border: 1px solid #51667c; border-radius: 14px; background: #162538; }
+    .app-status h2 { margin: 0 0 10px; font-size: 21px; }
+    .app-status p { margin: 7px 0 0; font-size: 15px; }
+    .app-status strong { display: inline; font-size: inherit; margin: 0; color: #ecf4ff; }
+    .app-status button { margin-top: 12px; padding: 9px 13px; border: 0; border-radius: 8px; background: #8ad8df; color: #10202d; cursor: pointer; font: inherit; font-weight: 700; }
+    .app-status button:disabled { cursor: wait; opacity: .65; }
+    .status-ok { color: #bdebed !important; }
+    .status-warn { color: #ffe3e8 !important; }
     .auth { margin: 26px 0; padding: 20px; border: 1px solid #51667c; border-radius: 14px; background: #162538; }
     .auth h2 { margin: 0 0 14px; font-size: 21px; }
     .auth form { display: grid; gap: 12px; }
@@ -48,6 +58,14 @@
     <div class="eyebrow">BYTE BACK · 로그인</div>
     <h1>점령된 자료실</h1>
     <p>지금은 보호 장치가 없는 상태입니다. 아래 기록은 모두 실습을 위해 만든 가상 자료입니다.</p>
+    <section class="app-status" aria-labelledby="app-status-title">
+      <h2 id="app-status-title">나만의 접속 앱 상태</h2>
+      <p id="device-status" class="status-warn" role="status" aria-live="polite"><strong>기기 승인:</strong> 서버 확인 전입니다. 설치 표시만으로 기기 승인이 완료되지는 않습니다.</p>
+      <button id="request-device-approval" type="button" hidden>기기 승인 요청</button>
+      <p id="device-request-status" class="auth-status" role="status" aria-live="polite"></p>
+      <p id="connection-status" role="status" aria-live="polite"><strong>접속 상태:</strong> 확인 중입니다.</p>
+      <p>오프라인에서는 서버 확인을 할 수 없습니다. 다시 연결한 뒤 서버의 기기 확인을 받아야 합니다.</p>
+    </section>
     <section class="auth" aria-labelledby="auth-title">
       <h2 id="auth-title">자료실 로그인</h2>
       <form id="login-form">
@@ -79,7 +97,7 @@
       </form>
       <p id="note-status" class="note-status" role="status" aria-live="polite"></p>
     </section>
-    <ul id="notes" aria-live="polite" hidden><li>가상 자료를 불러오는 중입니다.</li></ul>
+    <ul id="notes" aria-live="polite" hidden></ul>
   </main>
   <script type="module">
     const loginForm = document.querySelector('#login-form');
@@ -87,6 +105,10 @@
     const signedInEmail = document.querySelector('#signed-in-email');
     const logoutButton = document.querySelector('#logout');
     const authStatus = document.querySelector('#auth-status');
+    const deviceStatus = document.querySelector('#device-status');
+    const requestDeviceApprovalButton = document.querySelector('#request-device-approval');
+    const deviceRequestStatus = document.querySelector('#device-request-status');
+    const connectionStatus = document.querySelector('#connection-status');
     const anonymousNotice = document.querySelector('#anonymous-notice');
     const noteEditor = document.querySelector('#note-editor');
     const notesList = document.querySelector('#notes');
@@ -98,6 +120,72 @@
     const cancelEditButton = document.querySelector('#cancel-edit');
     const noteStatus = document.querySelector('#note-status');
     let activeSession = { authenticated: false };
+    let activeDeviceApproval = { approved: false, status: 'login_required' };
+
+    function renderProtectedArea() {
+      const canOpen = activeSession.authenticated && activeDeviceApproval.approved;
+      noteEditor.hidden = !canOpen;
+      notesList.hidden = !canOpen;
+      if (!canOpen) {
+        resetNoteEditor();
+        notesList.replaceChildren();
+      }
+    }
+
+    function renderDeviceApprovalState(result = { approved: false, status: 'login_required' }) {
+      activeDeviceApproval = {
+        approved: result.approved === true && result.status === 'approved',
+        status: typeof result.status === 'string' ? result.status : 'unknown',
+      };
+      if (activeDeviceApproval.approved) {
+        deviceStatus.className = 'status-ok';
+        deviceStatus.innerHTML = '<strong>기기 승인:</strong> 서버가 이 기기를 등록 기기로 확인했습니다.';
+        requestDeviceApprovalButton.hidden = true;
+        deviceRequestStatus.textContent = '';
+      } else if (activeDeviceApproval.status === 'pending') {
+        deviceStatus.className = 'status-warn';
+        deviceStatus.innerHTML = '<strong>기기 승인:</strong> 승인 요청이 접수되었습니다. 서버 등록부의 확인을 기다리는 중입니다.';
+        requestDeviceApprovalButton.hidden = !activeSession.authenticated;
+        requestDeviceApprovalButton.disabled = false;
+        requestDeviceApprovalButton.textContent = '승인 상태 다시 확인';
+      } else if (activeDeviceApproval.status === 'revoked') {
+        deviceStatus.className = 'status-warn';
+        deviceStatus.innerHTML = '<strong>기기 승인:</strong> 서버 등록부에서 승인이 회수되었습니다.';
+        requestDeviceApprovalButton.hidden = !activeSession.authenticated;
+        requestDeviceApprovalButton.disabled = false;
+        requestDeviceApprovalButton.textContent = '승인 상태 다시 확인';
+      } else if (activeDeviceApproval.status === 'unregistered') {
+        deviceStatus.className = 'status-warn';
+        deviceStatus.innerHTML = '<strong>기기 승인:</strong> 등록부에서 확인되지 않았습니다. 요청을 보내도 서버 승인이 될 때까지 자료를 열지 않습니다.';
+        requestDeviceApprovalButton.hidden = !activeSession.authenticated;
+        requestDeviceApprovalButton.disabled = false;
+        requestDeviceApprovalButton.textContent = '기기 승인 요청';
+      } else if (activeDeviceApproval.status === 'login_required') {
+        deviceStatus.className = 'status-warn';
+        deviceStatus.innerHTML = '<strong>기기 승인:</strong> 로그인 후 서버 확인을 시작합니다.';
+        requestDeviceApprovalButton.hidden = true;
+        deviceRequestStatus.textContent = '';
+      } else {
+        deviceStatus.className = 'status-warn';
+        deviceStatus.innerHTML = '<strong>기기 승인:</strong> 서버 확인에 실패했습니다. 보호 자료는 표시하지 않습니다.';
+        requestDeviceApprovalButton.hidden = !activeSession.authenticated;
+        requestDeviceApprovalButton.disabled = false;
+        requestDeviceApprovalButton.textContent = '승인 상태 다시 확인';
+      }
+      renderProtectedArea();
+    }
+
+    function renderConnectionState() {
+      const online = navigator.onLine;
+      connectionStatus.className = online ? 'status-ok' : 'status-warn';
+      connectionStatus.innerHTML = online
+        ? '<strong>접속 상태:</strong> 온라인입니다. 자료 요청은 서버 확인을 거칩니다.'
+        : '<strong>접속 상태:</strong> 오프라인입니다. 서버 확인 전에는 보호 자료를 표시하지 않습니다.';
+    }
+
+    window.addEventListener('online', renderConnectionState);
+    window.addEventListener('offline', renderConnectionState);
+    renderConnectionState();
 
     function renderAuthState(session) {
       activeSession = session?.authenticated === true ? session : { authenticated: false };
@@ -108,12 +196,10 @@
       signedInEmail.textContent = email ?? '';
       anonymousNotice.hidden = authenticated;
       authStatus.hidden = authenticated;
-      noteEditor.hidden = !authenticated;
-      notesList.hidden = !authenticated;
       if (!authenticated) {
-        resetNoteEditor();
-        notesList.replaceChildren();
+        renderDeviceApprovalState();
       }
+      renderProtectedArea();
     }
 
     function resetNoteEditor() {
@@ -144,9 +230,38 @@
       return data;
     }
 
+    async function refreshDeviceApproval(requestApproval = false) {
+      if (!activeSession.authenticated) {
+        renderDeviceApprovalState();
+        return null;
+      }
+      requestDeviceApprovalButton.disabled = true;
+      deviceRequestStatus.textContent = requestApproval
+        ? '서버에 기기 승인 요청을 보내는 중입니다.'
+        : '서버 등록부에서 기기 승인 상태를 확인하는 중입니다.';
+      try {
+        const result = await responseData(await apiRequest('/api/device-approval', requestApproval
+          ? { method: 'POST' }
+          : {}));
+        renderDeviceApprovalState(result);
+        deviceRequestStatus.textContent = result.approved
+          ? '서버 확인이 끝났습니다. 기존 자료실을 열 수 있습니다.'
+          : result.status === 'pending'
+            ? '요청만 접수되었습니다. 승인 전에는 보호 자료를 표시하지 않습니다.'
+            : '아직 서버 등록부의 승인이 없습니다.';
+        return result;
+      } catch (error) {
+        renderDeviceApprovalState({ approved: false, status: 'unknown' });
+        deviceRequestStatus.textContent = `기기 승인 상태 확인 실패: ${error.message}`;
+        return null;
+      } finally {
+        requestDeviceApprovalButton.disabled = false;
+      }
+    }
+
     async function loadNotes() {
       const list = document.querySelector('#notes');
-      if (!activeSession.authenticated) {
+      if (!activeSession.authenticated || !activeDeviceApproval.approved) {
         list.replaceChildren();
         return;
       }
@@ -227,6 +342,12 @@
 
     cancelEditButton.addEventListener('click', resetNoteEditor);
 
+    requestDeviceApprovalButton.addEventListener('click', async () => {
+      const shouldRequest = activeDeviceApproval.status === 'unregistered';
+      await refreshDeviceApproval(shouldRequest);
+      if (activeDeviceApproval.approved) await loadNotes();
+    });
+
     loginForm.addEventListener('submit', async event => {
       event.preventDefault();
       const submitButton = loginForm.querySelector('button[type="submit"]');
@@ -245,7 +366,8 @@
         renderAuthState(session);
         authStatus.hidden = false;
         authStatus.textContent = '로그인되었습니다.';
-        await loadNotes();
+        const approval = await refreshDeviceApproval();
+        if (approval?.approved) await loadNotes();
       } catch (error) {
         authStatus.textContent = `로그인 실패: ${error.message}`;
       } finally {
@@ -270,7 +392,10 @@
     try {
       const session = await responseData(await apiRequest('/api/auth'));
       renderAuthState(session);
-      if (session.authenticated) await loadNotes();
+      if (session.authenticated) {
+        const approval = await refreshDeviceApproval();
+        if (approval?.approved) await loadNotes();
+      }
     } catch (error) {
       renderAuthState({ authenticated: false });
       authStatus.hidden = false;

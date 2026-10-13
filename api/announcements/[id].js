@@ -1,4 +1,4 @@
-import { getAuthenticatedContext, requireSameOrigin } from '../notes.js';
+import { getAuthenticatedContext, requireApprovedDevice, requireSameOrigin } from '../notes.js';
 import { formatResource, RESOURCE_IDS } from '../../src/resource-policy.mjs';
 import { storedOwnerMatches } from '../../src/resource-access.mjs';
 
@@ -42,6 +42,7 @@ export default async function handler(request, response) {
 
   const context = await getAuthenticatedContext(request, response);
   if (!context) return;
+  if (!await requireApprovedDevice(request, response, context)) return;
   const input = parseBody(request);
   if (!input || !validText(input.title) || !validText(input.body)) {
     return response.status(400).json({ error: 'INVALID_ANNOUNCEMENT' });

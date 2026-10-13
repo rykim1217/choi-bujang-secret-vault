@@ -1,7 +1,9 @@
 export const ACCESS_COOKIE = 'vault_access';
 export const REFRESH_COOKIE = 'vault_refresh';
+export const DEVICE_COOKIE = 'vault_device_id';
 
 const REFRESH_MAX_AGE = 60 * 60 * 24 * 30;
+const DEVICE_MAX_AGE = 60 * 60 * 24 * 365;
 const COOKIE_DATE = 'Thu, 01 Jan 1970 00:00:00 GMT';
 
 function headerValue(request, name) {
@@ -60,6 +62,13 @@ export function clearSessionCookies(response) {
     `${ACCESS_COOKIE}=; Path=/; Max-Age=0; Expires=${COOKIE_DATE}; HttpOnly; Secure; SameSite=Lax`,
     `${REFRESH_COOKIE}=; Path=/; Max-Age=0; Expires=${COOKIE_DATE}; HttpOnly; Secure; SameSite=Lax`,
   ]);
+}
+
+export function setDeviceCookie(response, deviceId) {
+  if (typeof deviceId !== 'string' || !deviceId.trim()) {
+    throw new TypeError('invalid_device_id');
+  }
+  appendCookies(response, [cookieHeader(DEVICE_COOKIE, deviceId, DEVICE_MAX_AGE)]);
 }
 
 export function sameOriginRequest(request, config) {

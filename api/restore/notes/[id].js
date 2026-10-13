@@ -1,4 +1,4 @@
-import { getAuthenticatedContext, requireSameOrigin } from '../../notes.js';
+import { getAuthenticatedContext, requireApprovedDevice, requireSameOrigin } from '../../notes.js';
 import { storedOwnerMatches } from '../../../src/resource-access.mjs';
 import {
   canRestorePracticeNote,
@@ -51,6 +51,7 @@ export default async function handler(request, response) {
 
   const context = await getAuthenticatedContext(request, response);
   if (!context) return;
+  if (!await requireApprovedDevice(request, response, context)) return;
   if (!canRestorePracticeNote(context.principal, copy)) {
     return response.status(403).json({ error: 'RESTORE_FORBIDDEN' });
   }

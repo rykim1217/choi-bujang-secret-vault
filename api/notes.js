@@ -11,6 +11,7 @@ import {
 } from '../src/auth-session.mjs';
 import { createLoginVerifier } from '../src/verify-login.mjs';
 import { formatResource, RESOURCE_IDS } from '../src/resource-policy.mjs';
+import { requireApprovedDevice as requireApprovedRegisteredDevice } from '../src/device-approval.mjs';
 
 const config = JSON.parse(readFileSync(new URL('../aleph.config.json', import.meta.url), 'utf8'));
 let loginVerifier;
@@ -66,6 +67,8 @@ export function requireSameOrigin(request, response) {
   return false;
 }
 
+export const requireApprovedDevice = requireApprovedRegisteredDevice;
+
 export function formatNote(note) {
   return formatResource(RESOURCE_IDS.notes, { id: note.id, title: note.title, body: note.content });
 }
@@ -92,6 +95,7 @@ export default async function handler(request, response) {
 
   const context = await getAuthenticatedContext(request, response);
   if (!context) return;
+  if (!await requireApprovedDevice(request, response, context)) return;
 
   if (request.method === 'POST') {
     const input = parseBody(request);

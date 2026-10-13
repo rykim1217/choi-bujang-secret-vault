@@ -43,7 +43,7 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 `$deployUrl`에는 실제 Vercel 주소를 확인해 넣습니다. GitHub의 과거 공개 커밋·브랜치·태그와 Vercel의 과거 공개 배포 URL도 같은 방식으로 확인합니다. 옛 공개 커밋이나 옛 배포가 남아 있거나 메모 문장을 계속 제공하는 동안에는 과거 노출이 해소됐다고 쓰지 않습니다. 현재 `origin/main`과 현재 배포가 깨끗한 것은 과거 노출 해소의 증명이 아닙니다.
 
-`aleph.config.json`의 현재 제출 준비 `step`은 10이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
+`aleph.config.json`의 현재 제출 준비 `step`은 11이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 4단계 저장점
 
@@ -126,6 +126,14 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 10단계 제출 준비에서 실제로 확인한 범위는 기준본 SHA-256·원본 커밋 검증, 정책 복원 미리보기, `node --test test/practice-note-restore.test.mjs`의 로컬 복구 사본·권한 경계 시험입니다. 실제 정책 복원, 실제 메모 복원 POST, 심판 인증, 운영 공격 차단은 성공으로 기록하지 않으며 모두 미실행입니다.
 
 제작3의 미해결 사항도 유지합니다. `practice-restore/`는 실제 침해 전 백업이 아닌 synthetic 자료이며, 심판 B 계정과 실제 Supabase 소유자·메모 ID의 공식 매핑이 없습니다. 제출 설정은 `step: 10`, 기존 3개 허용 경로를 유지한 `POST /api/restore/notes/:id` 추가, `restoreRoute: "POST /api/restore/notes/:id"`로 실제 `api/restore/notes/[id].js` 경로와 일치시켰습니다. 다만 이 표기가 공식 심판 제출 형식인지 여부는 여전히 미확인입니다. 공식 계약이 확인되기 전에는 고정 UUID를 실제 계정으로 간주하거나 운영 복원을 실행하지 않습니다.
+
+## 11단계 저장점
+
+현재 작동하는 기능은 설치형 웹앱 `manifest.webmanifest`와 온라인·오프라인 안내, 로그인한 사용자의 기기 승인 요청·상태 확인 화면입니다. 서버는 HttpOnly 기기 식별 쿠키와 Supabase `vault_devices` 등록부를 대조하며, 승인 요청 버튼은 `pending`만 만들고 `approved` 권한을 직접 만들지 않습니다. `approved` 상태를 서버가 확인하기 전에는 메모 목록·메모 편집 영역을 표시하지 않고, `/api/notes`, 개별 메모, 공지 수정, 복원 경로도 `DEVICE_NOT_APPROVED`로 거부합니다. 기기 개인키와 승인 토큰은 브라우저 저장소에 넣지 않습니다.
+
+Supabase SQL Editor에서 `supabase/vault_notes.sql`의 `vault_devices` 테이블 정의를 적용한 뒤, 운영 등록부에서 승인된 기기의 행만 `status = 'approved'`로 관리해야 합니다. 실제 DB 마이그레이션·기기 승인·Vercel 재배포는 이 저장점에서 실행하지 않았습니다. `aleph.config.json`에는 기존 실제 배포 주소·Supabase 발급자·심판 발급자·원본 API 주소를 유지하고 `GET|POST /api/device-approval` 경로를 추가했습니다.
+
+로컬 재확인은 `npm run build -- --local`, `node --test test/device-approval.test.mjs`, `node --test test/stage8-resource-policy.test.mjs`, `npm run test:r5`, `npm run test:package` 순서로 실행합니다. `npm run decider:test`는 가상 요청 연습이며 심판 판정이 아닙니다. 커밋 후 `npm run bundle`을 실행하며, `bundle-notes.json`과 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 보너스 xdr-01 저장점
 

@@ -1,4 +1,4 @@
-import { formatNote, getAuthenticatedContext, requireSameOrigin } from '../notes.js';
+import { formatNote, getAuthenticatedContext, requireApprovedDevice, requireSameOrigin } from '../notes.js';
 import { storedOwnerMatches } from '../../src/resource-access.mjs';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
@@ -35,6 +35,7 @@ export default async function handler(request, response) {
 
   const context = await getAuthenticatedContext(request, response);
   if (!context) return;
+  if (!await requireApprovedDevice(request, response, context)) return;
 
   if (request.method === 'GET') {
     const { data, error } = await context.supabase
