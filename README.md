@@ -43,7 +43,7 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 `$deployUrl`에는 실제 Vercel 주소를 확인해 넣습니다. GitHub의 과거 공개 커밋·브랜치·태그와 Vercel의 과거 공개 배포 URL도 같은 방식으로 확인합니다. 옛 공개 커밋이나 옛 배포가 남아 있거나 메모 문장을 계속 제공하는 동안에는 과거 노출이 해소됐다고 쓰지 않습니다. 현재 `origin/main`과 현재 배포가 깨끗한 것은 과거 노출 해소의 증명이 아닙니다.
 
-`aleph.config.json`의 `step`은 현재 구현에 맞춰 8이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
+`aleph.config.json`의 `step`은 현재 구현에 맞춰 9이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 4단계 저장점
 
@@ -83,6 +83,12 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 자료 API는 검증된 로그인 주체와 저장된 메모 `owner_id` 또는 공지 `instructor_id`를 조회·수정·삭제마다 다시 대조합니다. 요청 본문의 `owner_id`·`role`이나 화면 메뉴는 권한 판단에 사용하지 않으며, 다른 구역 자료의 거부 사유는 메모 `NOTE_NOT_FOUND`(404)와 공지 `ANNOUNCEMENT_FORBIDDEN`(403)으로 짧게 반환합니다. 화면 메뉴는 이번 단계에서 바꾸지 않았습니다. 운영 교차 사용자 시험은 토큰이 없을 때 미실행으로 남기며, 로컬 테스트는 실제 심판 판정으로 보고하지 않습니다.
 
 로컬 판정기 연습은 `npm run decider:test`로 실행합니다. 이 명령은 가상 요청 연습이며 심판 판정이나 실제 운영 API 연결 증거가 아닙니다. 저장점 제출 묶음은 커밋 후 `npm run bundle`로 만들고, `bundle-notes.json`과 `artifacts/submission.json`은 커밋하지 않습니다.
+
+## 9단계 저장점
+
+현재 작동하는 기능은 9단계 가상 사건 계약의 `at`, `method`, `identity.sub`만 입력으로 정규화·검증하고, 같은 가명 주체의 `GET` 사건이 어느 10분 구간에서든 120건을 넘을 때 `{ action: 'propose_revocation', reasonCode: 'burst_read', subject }`를 반환하는 것입니다. 정확히 120건, 다른 주체의 사건 합산, 10분 밖으로 분산된 사건은 탐지하지 않으며 네트워크·기기 등 계약 밖의 필드는 읽지 않습니다. 회수 API와 실제 권한 변경은 연결하지 않았고, 입력의 메모 내용·토큰·실명은 저장하거나 출력하지 않습니다.
+
+저장소 루트에서 `npm run detect:test`를 실행해 정상 조회·경계값·사용자 분리·시간 창 가상 사건을 연습합니다. 이 명령은 실제 반 엔진 사건 전달·접속 회수·심판 판정의 증거가 아닙니다. 저장점 제출 묶음은 커밋 후 `npm run bundle`로 만들며, `bundle-notes.json`과 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 보너스 xdr-01 저장점
 

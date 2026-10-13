@@ -17,7 +17,7 @@ function authHeaders(token, origin, json = false) {
 }
 
 export async function runAttackChecks(config) {
-  if (![1, 2, 3, 4, 5, 6, 7, 8].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
   let app;
   try {
     app = new URL(config.publicAppUrl);
@@ -76,6 +76,12 @@ export async function runAttackChecks(config) {
     attempts.push({ attackId: 'resource_zone_direct_api',
       expected: '다른 자원 구역과 알 수 없는 기능 경로가 자료 API에서 거부됨',
       observed: '미실행: 강사 공지 시험 계정과 구역별 운영 요청 계약이 제공되지 않았습니다.' });
+  }
+
+  if (config.step === 9) {
+    attempts.push({ attackId: 'burst_read_detection',
+      expected: '동일 가명 주체의 10분 내 120건 초과 GET만 회수 제안 대상으로 식별됨',
+      observed: '미실행: detect:test는 가상 사건 연습이며 운영 반 엔진 전달·실제 권한 변경 경로가 제공되지 않았습니다.' });
   }
 
   if (![4, 5, 8].includes(config.step)) return attempts;
