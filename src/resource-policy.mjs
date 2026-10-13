@@ -5,6 +5,8 @@ export const RESOURCE_IDS = Object.freeze({
 });
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const RESOURCE_SEGMENT = /^[A-Za-z0-9_-]+$/u;
+const RESERVED_FEATURES = new Set(['export']);
 const NOTE_COLLECTION_METHODS = new Set(['GET', 'POST']);
 const NOTE_ITEM_METHODS = new Set(['GET', 'PUT', 'DELETE']);
 
@@ -28,6 +30,13 @@ export function identifyResource({ service, method, path, route, queryLength } =
       && /^\/api\/notes\/([^/]+)$/u.test(path)
       && UUID.test(path.slice('/api/notes/'.length))
       && exactRoute(method, '/api/notes/:id', route)) {
+    return RESOURCE_IDS.notes;
+  }
+
+  const legacyNoteId = path.startsWith('/notes/') ? path.slice('/notes/'.length) : '';
+  if (service === 'notes' && method === 'GET' && RESOURCE_SEGMENT.test(legacyNoteId)
+      && !RESERVED_FEATURES.has(legacyNoteId)
+      && exactRoute(method, '/notes/:id', route)) {
     return RESOURCE_IDS.notes;
   }
 
