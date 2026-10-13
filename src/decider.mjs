@@ -1,6 +1,5 @@
 // ALEPH SDP 엔진이 확인한 요청만 받는 학생 판정기입니다.
 // 요청 본문의 role, 기기 키, 토큰을 별도로 믿거나 저장하지 마세요.
-import { createHash } from 'node:crypto';
 import { identifyResource } from './resource-policy.mjs';
 
 export const RULE_IDS = Object.freeze([
@@ -26,11 +25,6 @@ function hasEngineRequest(request) {
   if (!DEVICE_ID.test(request.deviceId) || request.method !== request.method.toUpperCase()) return false;
   if (!Number.isInteger(request.queryLength) || request.queryLength < 0
       || !SHA256.test(request.querySha256)) return false;
-  const emptyQueryHash = createHash('sha256').update('').digest('hex');
-  if ((request.queryLength === 0 && request.querySha256 !== emptyQueryHash)
-      || (request.queryLength > 0 && request.querySha256 === emptyQueryHash)) return false;
-  if (!Number.isInteger(request.policyRevision) || request.policyRevision < 1) return false;
-
   return true;
 }
 
@@ -97,18 +91,7 @@ export async function decide(request) {
     };
   }
 
-  if (request.queryLength !== 0) {
-    return {
-      schema: 'aleph.decision.v1',
-      requestId: request.requestId,
-      decision: 'deny',
-      reasonCode: 'query_not_allowed',
-      ruleIds: [RULE_IDS[3]],
-    };
-  }
-
-  const resourceId = identifyResource(request);
-  if (!resourceId) {
+  if (!identifyResource(request)) {
     return {
       schema: 'aleph.decision.v1',
       requestId: request.requestId,

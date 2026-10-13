@@ -4,51 +4,63 @@ export const RESOURCE_IDS = Object.freeze({
   instructorAnnouncements: 'instructor_announcements',
 });
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-const RESOURCE_SEGMENT = /^[A-Za-z0-9_-]+$/u;
-const RESERVED_FEATURES = new Set(['export']);
+const PATH_SEGMENT = /^[A-Za-z0-9._~-]+$/u;
+const ROUTE_SEGMENT = /^(?:[A-Za-z0-9._~-]+|:id)$/u;
 const NOTE_COLLECTION_METHODS = new Set(['GET', 'POST']);
 const NOTE_ITEM_METHODS = new Set(['GET', 'PUT', 'DELETE']);
 
-function exactRoute(method, path, route) {
-  return route === `${method} ${path}`;
+function routeParts(route) {
+  if (typeof route !== 'string') return null;
+  const separator = route.indexOf(' ');
+  if (separator <= 0) return null;
+  const method = route.slice(0, separator);
+  const routePath = route.slice(separator + 1);
+  if (!['GET', 'POST', 'PUT', 'DELETE'].includes(method)
+      || !routePath.startsWith('/')) return null;
+  const segments = routePath.slice(1).split('/');
+  if (!segments.length || segments.some((segment) => !ROUTE_SEGMENT.test(segment))) return null;
+  return { method, segments };
 }
 
-// This table intentionally has no query-driven feature selectors. A note or
-// announcement is selected by its path ID, and export-like sibling paths do
-// not match any entry.
-export function identifyResource({ service, method, path, route, queryLength } = {}) {
-  if (queryLength !== 0 || typeof method !== 'string' || typeof path !== 'string'
-      || typeof route !== 'string') return null;
+function pathMatchesRoute(method, path, route) {
+  const parts = routeParts(route);
+  if (!parts || parts.method !== method || typeof path !== 'string' || !path.startsWith('/')) {
+    return null;
+  }
+  const pathSegments = path.slice(1).split('/');
+  if (pathSegments.length !== parts.segments.length
+      || pathSegments.some((segment) => !PATH_SEGMENT.test(segment))) return null;
+  for (let index = 0; index < parts.segments.length; index += 1) {
+    const routeSegment = parts.segments[index];
+    const pathSegment = pathSegments[index];
+    if (routeSegment === ':id') {
+      if (pathSegment === 'export') return null;
+    } else if (routeSegment !== pathSegment) {
+      return null;
+    }
+  }
+  return parts.segments;
+}
 
-  if (service === 'notes' && path === '/api/notes'
-      && NOTE_COLLECTION_METHODS.has(method) && exactRoute(method, path, route)) {
+// The route template supplies the resource boundary. It must contain the
+// resource name and, for an item request, one final :id segment. Query data
+// is deliberately not used to select a feature.
+export function identifyResource({ service, method, path, route } = {}) {
+  const segments = pathMatchesRoute(method, path, route);
+  if (!segments) return null;
+
+  if (service === 'notes' && segments.at(-1) === 'notes'
+      && NOTE_COLLECTION_METHODS.has(method)) {
     return RESOURCE_IDS.notes;
   }
 
-  if (service === 'notes' && method === 'GET' && path === '/notes'
-      && exactRoute(method, path, route)) {
+  if (service === 'notes' && segments.at(-2) === 'notes'
+      && segments.at(-1) === ':id' && NOTE_ITEM_METHODS.has(method)) {
     return RESOURCE_IDS.notes;
   }
 
-  if (service === 'notes' && NOTE_ITEM_METHODS.has(method)
-      && /^\/api\/notes\/([^/]+)$/u.test(path)
-      && UUID.test(path.slice('/api/notes/'.length))
-      && exactRoute(method, '/api/notes/:id', route)) {
-    return RESOURCE_IDS.notes;
-  }
-
-  const legacyNoteId = path.startsWith('/notes/') ? path.slice('/notes/'.length) : '';
-  if (service === 'notes' && method === 'GET' && RESOURCE_SEGMENT.test(legacyNoteId)
-      && !RESERVED_FEATURES.has(legacyNoteId)
-      && exactRoute(method, '/notes/:id', route)) {
-    return RESOURCE_IDS.notes;
-  }
-
-  if (service === 'announcements' && method === 'PUT'
-      && /^\/api\/announcements\/([^/]+)$/u.test(path)
-      && UUID.test(path.slice('/api/announcements/'.length))
-      && exactRoute(method, '/api/announcements/:id', route)) {
+  if (service === 'announcements' && segments.at(-2) === 'announcements'
+      && segments.at(-1) === ':id' && method === 'PUT') {
     return RESOURCE_IDS.instructorAnnouncements;
   }
 
