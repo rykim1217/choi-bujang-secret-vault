@@ -1,6 +1,7 @@
 // The student changes this check as each stage adds an attack to the same app.
 // Never return tokens, private keys, real names, or note bodies.
 import { randomUUID } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
 
 const blockedStatuses = new Set([401, 403, 404]);
 
@@ -16,7 +17,7 @@ function authHeaders(token, origin, json = false) {
   };
 }
 
-export async function runAttackChecks(config) {
+async function runDeploymentChecks(config) {
   if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
   let app;
   try {
@@ -196,4 +197,18 @@ export async function runAttackChecks(config) {
     expected: '로그인한 다른 사용자의 메모 GET·PUT·DELETE가 모두 거부됨',
     observed: `${blockedCrossOwner ? '거부 확인' : '거부 확인 실패'} (${statuses.join(', ')}, B 정리 HTTP ${cleanupStatus})` });
   return attempts;
+}
+
+export async function runAttackChecks(config) {
+  const attempts = await runDeploymentChecks(config);
+  if (config.step !== 12) return attempts;
+  // Direct deployment fetches have no matching official judge attackId record.
+  // Preserve local observations separately; never claim a judge execution.
+  const directory = new URL('../artifacts/', import.meta.url);
+  mkdirSync(directory, { recursive: true });
+  writeFileSync(new URL('stage12-self-check.json', directory), `${JSON.stringify({
+    schema: 'aleph.student.self-check.v1', checkedAt: new Date().toISOString(),
+    source: 'direct_deployment_http', judgeRequestRecordsMatched: false, attempts,
+  }, null, 2)}\n`, 'utf8');
+  return attempts.map(({ attackId, expected }) => ({ attackId, expected, observed: 'not_run' }));
 }

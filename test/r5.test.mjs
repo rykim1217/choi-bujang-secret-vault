@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { deploymentIdentity } from '../scripts/deployment-identity.mjs';
 import { runAttackChecks } from '../src/attack-check.mjs';
+import { readFileSync } from 'node:fs';
 
 const config = {
   step: 1,
@@ -72,7 +73,10 @@ test('12단계 자기 점검은 실제 조회 응답과 미실행을 구분한�
     const attempts = await runAttackChecks({ ...config, step: 12 });
     assert.deepEqual(paths, ['/data.json', '/api/notes', '/api/device-approval', '/api/operations-summary']);
     assert.equal(attempts.length, 9);
-    assert.ok(attempts.slice(4).every(row => row.observed.startsWith('미실행:')));
-    assert.match(attempts[3].observed, /HTTP 401/);
+    assert.ok(attempts.every(row => row.observed === 'not_run'));
+    const selfCheck = JSON.parse(readFileSync(new URL('../artifacts/stage12-self-check.json', import.meta.url), 'utf8'));
+    assert.equal(selfCheck.judgeRequestRecordsMatched, false);
+    assert.match(selfCheck.attempts[3].observed, /HTTP 401/);
+    assert.ok(selfCheck.attempts.slice(4).every(row => row.observed.startsWith('미실행:')));
   } finally { globalThis.fetch = originalFetch; }
 });
