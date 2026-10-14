@@ -1,5 +1,17 @@
 # BYTE BACK 방어전 시작 틀 R5
 
+## 보너스 xdr-05 저장점
+
+`xdr/privilege/read-alerts.mjs`는 가상 Wazuh 경보 26건에서 시각·출발 주소·계정·규칙 수준·설명만 추출하며 비밀값 의심 문자열을 가립니다. `patterns.json`은 관리자 그룹 변경·낯선 관리자 실행·시간 밖 권한 사용의 조건과 MITRE T1068·T1078 근거를 기록합니다. 같은 패턴을 상수로 포함한 `decide.mjs`는 다른 파일·패키지·네트워크 없이 판단하며, 관리자 명령만으로 취약점 악용을 입증하지 않습니다.
+
+2026-10-14 `npm run xdr:run -- privilege` 재실행 결과는 **block 9·alert 8·record 9**, 가상 정상 이벤트 9건 중 차단 **0건**입니다. 같은 명령으로 `xdr/privilege/result.json`을 갱신하고 편집기에서 해당 파일을 눌러 `counts`를 확인합니다. 터미널의 `node xdr/privilege/read-alerts.mjs`는 26줄 읽기 확인용입니다. 실행기는 판단 결과만 생성하며 알림 기록·운영 차단·심판 판정을 수행하지 않습니다.
+
+`respond.mjs`는 판단을 다시 확인해 block 후보만 계정·출발 주소·패턴에 한정된 메모리 거부 규칙으로 등록하며, 기본 15분 만료와 근거 경보 번호를 붙입니다. block·alert는 기본 `xdr/alerts.log`에 원문·주소·계정 없이 기록하고 정상 이벤트에는 규칙을 만들지 않습니다. `checkAccess(request, inspectedAlert)`는 기존 ZTNA 판정기의 deny·step_up을 유지하고 allow 뒤에 신뢰된 별도 경보 검사를 추가합니다. 공식 요청 계약과 기존 판정기 규칙은 변경하지 않았습니다.
+
+`node --test --test-isolation=none test/privilege-connection.test.mjs`의 로컬 시험 4개가 통과했습니다. 명확한 공격 거부·애매한 시도 알림·정상 및 동일 주소 정상 요청 허용·기존 거부와 추가 확인 유지·만료·위조 결과 거부·독립 판단을 확인했습니다. 운영 등록은 `installDenyRule` 연결점만 제공하며 운영 ZTNA 등록·실제 세션 회수·배포·심판 판정은 미실행입니다. 메모리 규칙은 재시작하면 사라지며 운영 연결에는 경보 계정과 확인된 요청 신원의 신뢰된 매핑이 필요합니다.
+
+설정된 배포 주소는 https://choi-bujang-secret-vault-rayeon.vercel.app 입니다. 설정 step 12, 저장소 원격과 배포 주소 문서, 로그인 발급자·JWKS·대상, 허용 경로 3개, 원본 API를 기존 구현과 대조했습니다. 기존 RULE_IDS 여섯 개는 구현되어 있으며 설정과 운영 측 judgeIssuer를 유지합니다. 최신 원격 배포 상태·bundle 자기 점검은 이번 저장점에서 미실행입니다. 기존 가상 메모·다른 XDR 모듈을 보존하고, 알림 로그·bundle-notes.json·artifacts/submission.json은 커밋에 포함하지 않습니다.
+
 ## 보너스 xdr-04 저장점 준비
 
 `xdr/persistence/read-alerts.mjs`는 가상 경보 24건에서 시각·출발 주소·계정·규칙 수준·설명만 출력하고 비밀값 의심 문자열을 가립니다. `patterns.json`에는 서비스(T1543), 예약 작업(T1053), 시작 폴더(T1547.001)의 이름·조건·한 줄 근거·출처를 기록했습니다. `decide.mjs` 맨 위에 같은 패턴을 상수로 넣었으며 외부 파일·패키지·네트워크 없이 판단합니다. 0.85 이상 block, 0.5 이상 alert, 나머지는 record입니다.
