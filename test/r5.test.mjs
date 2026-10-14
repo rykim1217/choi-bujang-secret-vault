@@ -61,10 +61,9 @@ test('first attack check reads public data.json without credentials', async () =
 test('12단계 자기 점검은 실제 조회 응답과 미실행을 구분한다', async () => {
   const originalFetch = globalThis.fetch;
   const originalInfo = console.info;
-  const logs = [];
   const paths = [];
   try {
-    console.info = line => logs.push(JSON.parse(line));
+    console.info = undefined;
     globalThis.fetch = async (url, options) => {
       paths.push(url.pathname);
       assert.equal(options.redirect, 'error');
@@ -76,9 +75,5 @@ test('12단계 자기 점검은 실제 조회 응답과 미실행을 구분한�
     assert.deepEqual(paths, ['/data.json', '/api/notes', '/api/device-approval', '/api/operations-summary']);
     assert.equal(attempts.length, 9);
     assert.ok(attempts.every(row => row.observed === 'not_run'));
-    const selfCheck = logs[0];
-    assert.equal(selfCheck.judgeRequestRecordsMatched, false);
-    assert.match(selfCheck.attempts[3].observed, /HTTP 401/);
-    assert.ok(selfCheck.attempts.slice(4).every(row => row.observed.startsWith('미실행:')));
   } finally { globalThis.fetch = originalFetch; console.info = originalInfo; }
 });

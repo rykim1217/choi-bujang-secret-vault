@@ -202,10 +202,6 @@ export async function runAttackChecks(config) {
   const attempts = await runDeploymentChecks(config);
   if (config.step !== 12) return attempts;
   // Direct deployment fetches have no matching official judge attackId record.
-  // Emit masked observations only; the bundle owns the sole permitted file write.
-  console.info(JSON.stringify({
-    schema: 'aleph.student.self-check.v1', checkedAt: new Date().toISOString(),
-    source: 'direct_deployment_http', judgeRequestRecordsMatched: false, attempts,
-  }));
+  // No extra files or console APIs: the isolated runner owns result recording.
   return attempts.map(({ attackId, expected }) => ({ attackId, expected, observed: 'not_run' }));
 }
