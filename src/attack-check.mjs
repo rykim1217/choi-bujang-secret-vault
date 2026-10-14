@@ -1,8 +1,6 @@
 // The student changes this check as each stage adds an attack to the same app.
 // Never return tokens, private keys, real names, or note bodies.
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
 
 const blockedStatuses = new Set([401, 403, 404]);
 
@@ -204,12 +202,10 @@ export async function runAttackChecks(config) {
   const attempts = await runDeploymentChecks(config);
   if (config.step !== 12) return attempts;
   // Direct deployment fetches have no matching official judge attackId record.
-  // Preserve local observations separately; never claim a judge execution.
-  const directory = resolve(import.meta.dirname, '..', 'artifacts');
-  mkdirSync(directory, { recursive: true });
-  writeFileSync(join(directory, 'stage12-self-check.json'), `${JSON.stringify({
+  // Emit masked observations only; the bundle owns the sole permitted file write.
+  console.info(JSON.stringify({
     schema: 'aleph.student.self-check.v1', checkedAt: new Date().toISOString(),
     source: 'direct_deployment_http', judgeRequestRecordsMatched: false, attempts,
-  }, null, 2)}\n`, 'utf8');
+  }));
   return attempts.map(({ attackId, expected }) => ({ attackId, expected, observed: 'not_run' }));
 }
