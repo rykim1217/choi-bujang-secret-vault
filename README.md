@@ -1,5 +1,18 @@
 # BYTE BACK 방어전 시작 틀 R5
 
+## 보너스 xdr-06 저장점
+
+`xdr/exfiltration/read-alerts.mjs`는 가상 Wazuh 경보 30건에서 시각·출발 주소·계정·규칙 수준·설명 30줄을 추출하고 비밀값 의심 문자열을 가립니다. `patterns.json`에는 MITRE T1041·T1048 근거와 수업용 조건을 기록했습니다. 같은 패턴 상수를 포함한 `decide.mjs`는 외부 파일·패키지·네트워크 없이 판단하며, 전송량 하나나 경보 수준만으로 차단하지 않습니다.
+
+2026-10-14 `npm run xdr:run -- exfiltration` 재실행 결과는 **block 10·alert 10·record 10**, 가상 정상 이벤트 10건 중 차단 **0건**입니다. 같은 명령으로 다시 실행하고 편집기에서 `xdr/exfiltration/result.json`을 눌러 `counts`를 확인합니다. 명확한 복합 반출은 block, 약한 반출 징후는 alert, 정상 이벤트는 record입니다. 읽기는 `node xdr/exfiltration/read-alerts.mjs`로 확인합니다. Windows에서 npm이 검색되지 않으면 `& 'C:/Program Files/nodejs/npm.cmd' run xdr:run -- exfiltration`을 사용합니다.
+
+`respond.mjs`는 판단을 재확인한 block 후보만 목적지·계정·출발 주소·현재 공격 패턴에 한정된 메모리 거부 규칙으로 등록하고 기본 15분 만료·근거 경보 번호를 붙입니다. block·alert 알림은 `xdr/alerts.log`에 원문·주소·계정 없이 한 줄씩 기록하며 이번 가상 경보 응답 확인에서 규칙 10개·알림 20줄을 생성했습니다. `checkAccess(request, inspectedAlert)`는 기존 ZTNA deny·step_up을 유지하고 allow 뒤에 신뢰된 별도 경보 검사를 추가합니다. 정상 요청은 같은 출발 주소여도 통과합니다. 공식 요청·응답 계약과 기존 판정기 규칙은 보존했습니다.
+
+`node --test --test-isolation=none test/exfiltration-connection.test.mjs` 로컬 시험 4개가 통과했습니다. 공격 거부·애매한 시도 알림·정상 허용·기존 거부와 추가 확인 유지·목적지 범위·만료·위조 결과 거부·독립 판단을 확인했습니다. 실행기는 판단 결과만 생성하며 응답 연결·운영 차단·심판 판정을 실행하지 않습니다. 운영 등록은 `installDenyRule` 연결점만 제공하며 운영 엔진·자료 API 연결·실제 접속 회수·배포·심판 판정은 미실행입니다. 메모리 규칙은 재시작하면 사라지며 실제 연결에는 신뢰된 경보와 요청 신원·전송 목적지의 매핑이 필요합니다.
+
+설정 step 12, Git 원격·문서의 배포 주소, 로그인 발급자·JWKS·대상, 허용 경로 3개, 원본 API의 vault_notes 경로를 기존 구현과 대조했습니다. `src/decider.mjs` RULE_IDS 여섯 개는 구현된 규칙이며 설정과 운영 측 judgeIssuer를 유지합니다. 현재 원격 배포 상태·bundle 자기 점검은 이번 저장점에서 미실행입니다. 기존 가상 메모·다른 XDR 모듈을 보존하고 알림 로그·bundle-notes.json·artifacts/submission.json은 커밋에서 제외합니다.
+
+
 ## 보너스 xdr-05 저장점
 
 `xdr/privilege/read-alerts.mjs`는 가상 Wazuh 경보 26건에서 시각·출발 주소·계정·규칙 수준·설명만 추출하며 비밀값 의심 문자열을 가립니다. `patterns.json`은 관리자 그룹 변경·낯선 관리자 실행·시간 밖 권한 사용의 조건과 MITRE T1068·T1078 근거를 기록합니다. 같은 패턴을 상수로 포함한 `decide.mjs`는 다른 파일·패키지·네트워크 없이 판단하며, 관리자 명령만으로 취약점 악용을 입증하지 않습니다.
