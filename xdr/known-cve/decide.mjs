@@ -32,6 +32,15 @@ const PATTERNS = Object.freeze([
     "sources": [
       "https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-356a"
     ]
+  },
+  {
+    "name": "ambiguous_known_cve_signal",
+    "condition": "T1190으로 분류된 경보에 CVE-2021-44228·jndi 언급, 취약점 목록·검색, 머리글 중괄호, 점검 도구와 비슷한 이름 또는 관련 라이브러리 이름 같은 약한 흔적이 명시되고 완전한 원격 조회 구문은 없는 경우; alert로만 남기며 T1190 분류나 일반 정상 이벤트만으로는 일치하지 않는다.",
+    "evidence": "CVE-2021-44228·T1190 관련 경보의 약한 흔적은 악용을 입증하지 않으므로, 이번 과제의 애매한 시도 알림 조건에 따라 차단 없이 확인 대상으로 남긴다.",
+    "sources": [
+      "https://nvd.nist.gov/vuln/detail/CVE-2021-44228",
+      "https://attack.mitre.org/techniques/T1190/"
+    ]
   }
 ].map((pattern) => Object.freeze(pattern)));
 
@@ -84,5 +93,10 @@ export function decide(alert) {
   const scanner = [...headers, ...parameters].some((value) => /\bCVE-2021-44228_scanner\b/iu.test(value))
     || (context && /(?:CVE-2021-44228|Log4Shell|알려진 취약점).*점검 흔적/iu.test(description));
   if (scanner) names.push(PATTERNS[3].name);
+  const weakSignal = context && (
+    [...headers, ...parameters].some((value) => /CVE-2021-44228|\bjndi\b/iu.test(value))
+    || /CVE-2021-44228|\bjndi\b|취약점.*(?:목록|검색)|머리글.*중괄호|점검 도구.*비슷|라이브러리 이름/iu.test(description)
+  );
+  if (weakSignal && names.length === 0) names.push(PATTERNS[4].name);
   return result(names.length ? 0.6 : 0, names);
 }
