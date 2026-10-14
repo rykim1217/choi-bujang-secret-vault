@@ -1,5 +1,17 @@
 # BYTE BACK 방어전 시작 틀 R5
 
+## 보너스 xdr-04 저장점 준비
+
+`xdr/persistence/read-alerts.mjs`는 가상 경보 24건에서 시각·출발 주소·계정·규칙 수준·설명만 출력하고 비밀값 의심 문자열을 가립니다. `patterns.json`에는 서비스(T1543), 예약 작업(T1053), 시작 폴더(T1547.001)의 이름·조건·한 줄 근거·출처를 기록했습니다. `decide.mjs` 맨 위에 같은 패턴을 상수로 넣었으며 외부 파일·패키지·네트워크 없이 판단합니다. 0.85 이상 block, 0.5 이상 alert, 나머지는 record입니다.
+
+2026-10-14 `npm run xdr:run -- persistence` 실행 결과는 **block 8·alert 8·record 8**, 가상 정상 이벤트 8건의 차단은 **0건**입니다. 같은 명령으로 `xdr/persistence/result.json`을 갱신할 수 있습니다. 터미널에서 `node xdr/persistence/read-alerts.mjs`로 읽기 결과를 보고, 편집기에서 result.json의 counts를 확인합니다. 이 실행기는 판단만 수행하며 알림 기록·규칙 등록·운영 격리·심판 판정은 수행하지 않습니다.
+
+`respond.mjs`는 판단을 다시 확인하여 명확한 공격만 기본 15분 만료와 근거 경보 번호가 있는 메모리 거부 규칙으로 등록하고, block·alert를 기본 `xdr/alerts.log`에 원문·주소·계정 없이 한 줄씩 기록합니다. `checkAccess(request, inspectedAlert)`는 기존 판정기를 먼저 호출해 deny·step_up을 유지하고, allow인 요청에 신뢰된 별도 경보 검사를 추가하는 로컬 연결입니다. 정상 이벤트는 같은 출발 주소여도 거부하지 않습니다. 검사 경보가 없으면 미검사 오류로 거부합니다. 공식 요청·응답 계약과 기존 판정기 규칙은 변경하지 않았습니다.
+
+`node --test --test-isolation=none test/persistence-connection.test.mjs`의 4개 시험으로 공격 거부·애매한 알림·정상 허용·같은 주소 정상 허용·기존 거부 및 추가 확인 유지·만료·위조 결과 거부·외부 등록 확인 처리·독립 실행을 확인했습니다. 운영 ZTNA 등록은 `installDenyRule` 연결점만 제공하며 실제 등록 API·자료 API·운영 엔진 호출 연결은 미실행입니다. 따라서 실제 PC 전체 접속 격리를 완료한 상태는 아닙니다. 메모리 규칙은 재시작하면 사라지며 운영 연결 시 신뢰된 경보와 기기 연결 확인이 필요합니다.
+
+설정 step 12, 저장소 주소, 배포 주소, 로그인 발급자·JWKS·대상, 허용 경로, 원본 API를 기존 구현·README·Git 원격과 대조했습니다. 기존 RULE_IDS 여섯 개는 구현되어 있으며 설정과 운영 측 judgeIssuer를 유지합니다. 현재 원격 배포 상태 확인·배포·bundle 자기 점검·심판 판정은 이번 작업에서 미실행입니다. 알림 로그, bundle-notes.json, artifacts/submission.json은 커밋에서 제외합니다.
+
 ## 보너스 xdr-03 저장점
 
 ### 심판 피드백에 따른 애매한 경보 분류 수정
