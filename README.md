@@ -6,6 +6,8 @@
 
 `respond.mjs`는 차단 후보에 근거 경보 번호와 기본 15분 만료를 붙여 프로세스 메모리에 저장하고, `matchingDenyRule`로 만료와 현재 공격 형태를 다시 확인합니다. 같은 출발 주소의 정상 요청만으로는 차단하지 않습니다. 알림은 기본 `xdr/alerts.log`에 식별값·공격 원문 없이 기록합니다. 외부 등록 연결점 `installDenyRule`은 준비했지만 운영 ZTNA 등록 API 연결은 미실행입니다. 기존 `src/decider.mjs` 규칙과 요청·응답 계약은 그대로 유지하며, 프로세스 재시작 후 메모리 규칙은 다시 등록해야 합니다.
 
+제작 4 보완의 `checkAccess(request, inspectedAlert)`는 기존 ZTNA 판정기를 실제로 호출하는 로컬 결합 함수입니다. 기존 deny·step_up을 유지하고, allow일 때 별도로 전달된 검사 경보를 XDR 판단·응답 처리에 연결해 명확한 공격만 deny로 바꿉니다. 검사 경보가 없으면 미검사 상태로 거부합니다. 공식 요청에 새 필드를 넣지 않으며 반환은 로컬 결합 결과이므로 운영 엔진 응답으로 제출하지 않습니다. `node --test --test-isolation=none test/known-cve-connection.test.mjs`로 공격 거부·정상 허용·동일 주소 정상 허용·추가 확인 유지·만료·알림을 확인합니다. 운영 엔진과 자료 API는 이 함수를 아직 호출하지 않으며, 운영 배포·차단은 미실행입니다.
+
 저장소 터미널에서 `npm run xdr:run -- known-cve`로 `xdr/known-cve/result.json`을 다시 만듭니다. 2026-10-14 실행 결과는 block 8·alert 1·record 15이며 가상 정상 이벤트 8건의 차단은 0건입니다. 응답 모듈의 별도 로컬 확인은 차단 규칙 8개·알림 1개, 같은 주소의 정상 요청 허용, 만료, 위조된 차단 결과 거부를 확인했습니다. `xdr:run`은 판단 결과만 생성하며 응답 연결·알림 파일 쓰기·운영 차단·심판 판정은 실행하지 않습니다.
 
 설정의 step 12, 저장소·배포 주소, 로그인 발급자, 허용 경로, 원본 API와 구현된 RULE_IDS 여섯 개를 대조했습니다. 현재 배포 식별자 조회는 실패하여 최신 배포 상태는 미확인입니다. 기존 설정과 운영 측 judgeIssuer를 유지하며 이 저장점에서 배포하지 않습니다. 기존 `src/attack-check.mjs`도 유지하고 bundle 자기 점검은 이번 저장점에서 미실행입니다. `bundle-notes.json`, `artifacts/submission.json`과 알림 로그는 커밋에 포함하지 않습니다.

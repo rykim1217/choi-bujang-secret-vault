@@ -1,6 +1,7 @@
 import { appendFile } from 'node:fs/promises';
 import { isIP } from 'node:net';
 import { decide } from './decide.mjs';
+import { decide as decideZtna } from '../../src/decider.mjs';
 
 const LOG_URL = new URL('../alerts.log', import.meta.url);
 const RULES = new Map();
@@ -29,6 +30,25 @@ export function matchingDenyRule(alert, options = {}) {
     }
   }
   return null;
+}
+
+// Local composition: the inspected event is a separate trusted input, never a
+// new field on the official ZTNA request. This envelope is not an engine response.
+export async function checkAccess(request, inspectedAlert, options = {}) {
+  const ztna = await decideZtna(request);
+  // Always preserve a denial or step-up from the existing policy.
+  if (ztna.decision !== 'allow') {
+    return { decision: ztna.decision, ztna, xdr: null, rule: null };
+  }
+  // No inspection must not be represented as a successful XDR check.
+  if (!inspectedAlert || typeof inspectedAlert !== 'object' || Array.isArray(inspectedAlert)) {
+    return { decision: 'deny', ztna, xdr: null, rule: null, error: 'INSPECTION_REQUIRED' };
+  }
+  const xdr = await respond(inspectedAlert, decide(inspectedAlert), options);
+  const rule = matchingDenyRule(inspectedAlert, options);
+  const denied = xdr.decision.action === 'block';
+  // Even missing rule identifiers cannot let a clear current attack through.
+  return { decision: denied ? 'deny' : 'allow', ztna, xdr, rule };
 }
 
 export async function respond(alert, suppliedDecision = decide(alert), options = {}) {
