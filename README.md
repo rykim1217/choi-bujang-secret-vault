@@ -43,7 +43,7 @@ if ($hits) { 'FAIL: 현재 배포의 data.json에서 메모 문장이 검색됨'
 
 `$deployUrl`에는 실제 Vercel 주소를 확인해 넣습니다. GitHub의 과거 공개 커밋·브랜치·태그와 Vercel의 과거 공개 배포 URL도 같은 방식으로 확인합니다. 옛 공개 커밋이나 옛 배포가 남아 있거나 메모 문장을 계속 제공하는 동안에는 과거 노출이 해소됐다고 쓰지 않습니다. 현재 `origin/main`과 현재 배포가 깨끗한 것은 과거 노출 해소의 증명이 아닙니다.
 
-`aleph.config.json`의 현재 제출 준비 `step`은 11이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
+`aleph.config.json`의 현재 제출 준비 `step`은 12이며, `repoUrl`, 실제 `publicAppUrl`, Supabase `identityProvider`, 자료 API `allowedRoutes`, 쿼리 없는 원본 `originalApiUrl`을 기록합니다. `npm run bundle`과 `bundle-notes.json`은 저장점에서만 사용하며, 생성된 `artifacts/submission.json`은 커밋하지 않습니다.
 
 ## 4단계 저장점
 
@@ -140,6 +140,81 @@ Supabase SQL Editor에서 `supabase/vault_notes.sql`의 `vault_devices` 테이�
 `xdr/brute-force/read-alerts.mjs`는 원본 경보에서 시각·출발 주소·계정·규칙 수준·설명만 읽고, `patterns.json`과 `decide.mjs`는 MITRE ATT&CK T1110 근거의 두 무차별 대입 패턴을 판정합니다. `decide.mjs`는 판단만 반환하며, `respond.mjs`는 차단 후보에만 15분 만료·근거 경보 번호가 있는 ZTNA 거부 규칙 후보를 만들고 `xdr/alerts.log`에 민감한 식별값 없이 한 줄 알림을 남깁니다. 기존 `src/decider.mjs` 규칙은 변경하지 않습니다.
 
 경보 결과 묶음은 저장소 루트에서 `npm run xdr:run -- brute-force`로 다시 만들며 `xdr/brute-force/result.json`에 기록합니다. 이 로컬 실행 결과는 심판 판정이나 운영 연결 증명이 아닙니다.
+
+## 12단계 제작 3: 설치·실행·중지·복구 안내
+
+2026-10-14에 확인한 기준 커밋은 `fdc764d531cb11d0097ac441ea4984cc22ac42a4`(「11단계 설정 정정: 판정기 허용 경로 반영」)입니다. 현재 12단계 제작 1~2의 작전실 화면·요약 API·조회 실측 절차는 이 커밋 위의 미커밋 변경입니다. 아래 안내도 아직 저장점 커밋 전이며, 기준 커밋만 새로 받으면 작전실 기능은 포함되지 않습니다. 재현 전에 `git log -1`과 `git status --short`로 실제 검사 대상 커밋과 추가 변경을 함께 확인하세요.
+
+제작 3 확인 당시 설정은 `step: 11`이었으며, 이번 저장점에서 `step: 12`로 올렸습니다. 마지막 커밋은 판정기의 `allowedRoutes`를 `GET /api/my/notes`, `GET /api/notes/:id`, `GET /notes/:id`로 정정했습니다. 위 10·11단계 기록에서 복원·기기 승인 경로를 허용 경로에 추가했다고 적은 부분은 당시 기록이며 현재 설정과 다릅니다. `restoreRoute`는 별도 항목으로 남아 있습니다. 기기 승인·작전실 서버 함수의 존재가 판정기 허용 경로에 추가됐다는 뜻은 아닙니다. 12단계 번호 변경·커밋·bundle 결과는 아래 저장점 기록과 실제 생성 파일을 확인합니다.
+
+### 출처와 실행 범위
+
+| 구성 | 출처·학생 몫 | 실행 범위 |
+|---|---|---|
+| 제공 엔진 | **ALEPH SDP 엔진 사용**. 요청 계약의 출처는 `student-kit/sdp-core/decision-contract.mjs`이며 이 저장소에서는 `docs/DECIDER_REQUEST.md`로 설명합니다. | 엔진 배포본·설치 프로그램·운영 시작/중지 명령은 이 저장소에 없습니다. 공식 제공 환경에서 운영자가 관리합니다. |
+| 학생 판정기 | `src/decider.mjs`의 등록 기기·신호·추가 확인·경로·구역·쓰기 거부 규칙 | `decide(request)`를 호출하는 로컬 가상 시험. 운영 엔진 연결은 별도 확인해야 합니다. |
+| 학생 탐지 규칙 | `src/detect.mjs`의 같은 주체·10분·120건 초과 탐지 | 로컬 가상 사건 입력과 회수 제안만 구현했습니다. 사건 전달·실제 회수 집행은 미연결입니다. |
+| 접속 앱·자료실 | `public/index.html`, `public/manifest.webmanifest`, `api/`의 로그인·소유자·기기 승인 검사 | 브라우저 설치형 웹앱, Vercel 서버 함수, Supabase Auth·등록부·자료 DB를 사용합니다. 별도 SDP 클라이언트 설치본은 아닙니다. |
+| 학생 작전실 | `api/operations-summary.js`, `src/operations-summary.mjs`, `src/operations-checks.mjs` | 가린 요약과 단계별 확인표를 표시하고 실제 GET 응답 상태만 기록합니다. 공식 41종 시험·심판 결과와 구분합니다. |
+| 학생 복구 도구 | `scripts/policy-baseline.mjs`, `src/practice-note-restore.mjs` | 검증된 실습 정책 기준본과 synthetic 메모 한 건의 복구 범위만 제공합니다. 운영 백업을 제공하지 않습니다. |
+
+### 설치와 설정
+
+1. 제출 전 확정한 저장점 커밋을 새 폴더에 받아 `git log -1`, `git status --short`로 버전을 확인합니다. 아직 이 안내에는 12단계 저장점 해시가 없습니다. 기존 폴더의 변경이나 DB 자료를 지우지 마세요.
+2. Node.js 22 이상과 npm을 준비하고 저장소 루트에서 `npm install`을 실행합니다. 현재 폴더의 로컬 시험 통과와 새 복제본의 설치 성공은 별개입니다. 새 복제본 설치는 이번 단계에서 미실행입니다.
+3. Vercel 프로젝트에 저장소를 연결합니다. `vercel.json`의 빌드 명령은 `npm run build`, 공개 폴더는 `public`입니다. 일반 빌드는 Vercel의 Git·커밋·배포 식별자가 필요합니다. `npm run build -- --local`은 그 식별자를 만들지 않는 로컬 빌드이며 서버 함수나 운영 배포를 시작하지 않습니다.
+4. 환경변수 `SUPABASE_URL`(프로젝트 주소), `SUPABASE_SECRET_KEY`(서버 인증·DB 조회)를 공식 Vercel 설정 화면에 입력합니다. 로그인용 키를 분리할 경우 `SUPABASE_AUTH_KEY`를 사용하며, 코드의 선택 순서는 `SUPABASE_AUTH_KEY` → `SUPABASE_ANON_KEY` → `SUPABASE_SECRET_KEY`입니다. 실제 값은 공식 비밀 입력란에 직접 넣고 코드·로그·Git·제출 묶음에는 넣지 않습니다.
+5. Supabase에서 기존 테이블과 권한을 확인합니다. 새 실습 DB에만 `supabase/vault_notes.sql`의 테이블·RLS·권한 정의를 검토해 적용합니다. 기존 DB의 자료를 초기화하지 않습니다. 실제 DB 적용과 승인 관리는 이번 단계에서 미실행입니다.
+6. 설정의 `publicAppUrl`·로그인 발급자·원본 API 주소를 실제 프로젝트와 대조한 뒤 배포합니다. `judgeIssuer`는 운영 측이 정한 접수 주소이므로 교체하지 않습니다. 실측 버튼은 설정된 HTTPS 배포 호스트와 현재 호스트가 같을 때만 동작합니다. 다른 Preview 주소에서는 `CHECK_DEPLOYMENT_MISMATCH`로 거부됩니다.
+
+### 실행과 직접 확인
+
+로컬에서는 아래 명령을 순서대로 실행합니다. 각 명령은 끝나면 종료되며 상주 판정기·탐지 서버를 시작하지 않습니다.
+
+```powershell
+npm run build -- --local
+npm run decider:test
+npm run fixture:7
+npm run detect:test
+node --test --test-isolation=none test/operations-summary.test.mjs test/operations-checks.test.mjs test/device-approval.test.mjs test/stage8-resource-policy.test.mjs test/practice-note-restore.test.mjs test/r5.test.mjs test/package-starter.test.mjs
+```
+
+`decider:test`의 정상 요청은 `allow`, 미등록 기기는 `deny`여야 합니다. `fixture:7`의 정상 요청은 `allow`, 복합 이상 요청은 `step_up`이어야 합니다. `detect:test`는 정상·120건 경계에서 `observe`, 같은 주체의 10분 내 120건 초과에서 `propose_revocation`을 확인합니다. 이것은 가상 요청·사건 연습이며 운영 접속 회수나 심판 판정이 아닙니다.
+
+실제 배포에서는 첫 화면 → 로그인 → **기기 승인 요청** 순서로 진행합니다. 요청은 `pending`만 만들며 승인 권한은 운영자가 공식 등록부에서 관리합니다. 서버가 `approved`를 확인한 뒤 자기 메모 목록·편집 영역이 열려야 하며, 승인 전·회수된 기기는 자료 API에서 `403 DEVICE_NOT_APPROVED`로 거부되어야 합니다. 브라우저가 설치 메뉴를 제공하면 **앱 설치** 또는 **홈 화면에 추가**를 선택합니다. 설치는 기기 승인이 아니며 오프라인에서는 서버 확인을 할 수 없습니다.
+
+작전실의 **작전실 새로고침**은 로그인한 현재 기기 상태·규칙 목록·실습 복구 버전을 조회합니다. 탐지·신원 회수·운영 복구는 미실행으로 남아야 합니다. **메모 목록 정상·무인증 조회 실측**은 같은 배포의 `/api/notes`에 인증 포함 GET과 인증 없는 GET을 순서대로 보냅니다. 승인 기기의 정상 요청은 `200`, 무인증 요청은 `401/403`이어야 합니다. 다른 결과는 기대 불일치이며 오류는 통과로 처리하지 않습니다.
+
+확인표의 전송 기록 ID·확인 시각·HTTP 결과를 Vercel 함수 로그의 `operations_checks`와 대조합니다. 대상 서버의 `x-vercel-id`가 있으면 별도 필드에 표시하며 없으면 미제공입니다. 요약은 `operations_summary` 기록과 대조합니다. 로그와 표에는 응답 본문·메모·인증값을 남기지 않습니다. 실측 결과는 현재 화면과 서버 로그에만 있으며 화면 새로고침·로그아웃 후에는 화면 기록을 지웁니다. 나머지 단계 시험은 공식 계정·대상·운영 연결을 확인한 뒤 별도로 수행하며 22행 절차를 공식 41종 통과 수로 환산하지 않습니다.
+
+### 중지
+
+실행 중인 로컬 시험은 터미널에서 `Ctrl+C`로 중지할 수 있습니다. 접속 앱은 **로그아웃** 후 창을 닫고, 설치 앱 제거는 브라우저의 앱 관리에서 수행합니다. 현재 로그아웃은 이 브라우저의 세션 쿠키를 지우는 동작이며 모든 신원의 접속을 회수하는 기능은 아닙니다. 자료 접근 중지가 필요하면 운영자가 공식 기기 등록부에서 해당 기기를 `revoked`로 관리하고 다음 자료 요청의 `403`을 확인합니다. 이미 화면에 전달된 자료가 원격으로 삭제된다고 보장하지 않습니다.
+
+서비스 전체 중지는 Vercel 공식 관리 화면에서 프로젝트에 제공되는 배포 접근 제한 기능을 적용하고 실제 URL의 접근 거부를 확인합니다. 이 저장소에는 운영 서비스 종료용 CLI가 없습니다. 제공 ALEPH SDP 엔진의 중지는 운영자의 공식 절차를 사용하며, DB나 감사 기록을 삭제하는 방식으로 중지하지 않습니다. 위 운영 조치는 이번 단계에서 실행하지 않았습니다.
+
+### 복구와 재검증
+
+1. 먼저 `git status --short`와 `git diff`로 이번 단계 변경과 다른 변경을 구분하고 복구 시 사라질 내용을 확인합니다. 기준 커밋 해시만 믿고 모든 변경을 덮어쓰지 않습니다. DB 자료·다른 작업·감사 기록을 보존합니다.
+2. 앱 배포 문제는 공식 Vercel 화면에서 **실제로 정상 동작을 확인한 배포**를 선택해 제공되는 롤백 절차를 사용합니다. 로컬 기준 커밋이 운영 정상 배포라는 증거는 아닙니다. 코드 복구는 이번 단계의 파일별 변경을 확인받은 뒤 적용하며 `git reset --hard`를 사용하지 않습니다.
+3. 시험 정책 복구는 `npm run policy:baseline -- compare` 다음 `npm run policy:baseline -- restore-preview`로 매니페스트·해시·원본 커밋과 복구 범위를 검증합니다. 기준본 `f780b661665ad8a33c134035acf06699e46b8f0f`는 실습용이며 12단계 앱 롤백 기준이 아닙니다. 설정도 복구 범위에 들어 있으므로 단계를 낮추거나 경로를 바꾸는 차이를 반드시 검토합니다.
+4. 시험 정책 복구를 승인한 경우에만 `npm run policy:baseline -- restore --confirm f780b661665ad8a33c134035acf06699e46b8f0f`를 실행하고, 표시된 범위를 확인해 `RESTORE`를 입력합니다. 이 명령은 정책 파일을 실제로 쓰므로 단순 확인 명령으로 실행하지 않습니다. 복구 후 `compare`와 `npm run policy:restore-check`를 다시 실행합니다.
+5. 메모 복구는 실습 사본의 고정 대상·소유자·내용 해시를 검증합니다. 실제 Supabase B 계정·메모와 synthetic 대상의 공식 매핑이 없으므로 운영 복구 POST는 현재 실행하지 않습니다. `node --test --test-isolation=none test/practice-note-restore.test.mjs`는 로컬 사본 검증일 뿐 실제 DB 복구가 아닙니다.
+6. 복구 후 위 로컬 실행 순서와 10단계의 운영 회귀 확인 순서를 반복합니다. 실제 API에서 정상 허용과 금지 거부를 모두 기록하고, 복구 버전·커밋·시각을 대조한 뒤 사용을 재개합니다. 사건 전달·신원 회수·41종 총공세는 운영 증거를 확보하기 전까지 미실행입니다.
+
+12단계 제작 1~2에서 실행한 로컬 확인은 작전실·실측 절차·기기 승인·패키지·배포 식별자 시험 15개, 로컬 빌드, 화면 스크립트 구문 검사입니다. 실제 배포·설치·로그인·GET 실측·DB 변경·회수·복구·새 복제본의 `npm install`·41종 시험은 이번 단계에서 미실행입니다. 제출물에는 비밀번호·토큰·개인키·서버 전용 키·실명·메모 본문을 넣지 않으며 `bundle-notes.json`과 `artifacts/submission.json`은 커밋하지 않습니다.
+
+제작 3에서 안내와 구현을 대조한 뒤 로컬 빌드, `decider:test`·`fixture:7`·`detect:test`의 가상 연습, 위 7개 시험 파일의 26개 로컬 시험을 실행해 통과했습니다. `git diff --check`도 통과했습니다. 운영 시험·설치·중지·복구를 실행한 결과는 아닙니다.
+
+## 12단계 저장점
+
+이 저장점은 작전실 요약, 1~11단계 정상·금지 요청 22행의 확인 절차, 정상·무인증 GET 실측 버튼, 설치·실행·중지·복구 안내를 포함합니다. 학생 판정기·탐지 규칙과 제공 ALEPH SDP 엔진의 출처를 구분하고 운영 사건·회수·복구·공식 41종 결과가 없으면 미실행으로 표시합니다. 규칙 목록은 기존 구현된 6개를 그대로 사용하며 메모 본문을 작전실 응답·기록에 넣지 않습니다.
+
+제출 설정은 `step: 12`이며 기존 배포 주소·Supabase 발급자·원본 API·3개 판정 허용 경로·별도 복원 경로를 구현과 대조해 유지했습니다. 운영 측 `judgeIssuer`도 유지했습니다. 2026-10-14에 실제 배포 `/aleph.json`은 HTTP 200, `step: 11`, 커밋 `fdc764d531cb11d0097ac441ea4984cc22ac42a4`로 확인했습니다. 따라서 이 저장점의 새 코드가 배포됐다고 기록하지 않습니다.
+
+다시 실행하는 순서는 `npm install` → `npm run build -- --local` → 위 로컬 확인 명령 → Vercel 배포 → 로그인·기기 승인 확인 → 작전실 새로고침·GET 실측입니다. 새 복제본 설치와 운영 배포는 미실행이며 실제 비밀값은 공식 설정 화면에서 입력합니다. 저장점 검증으로 27개 로컬 시험·로컬 빌드·diff 형식 검사가 통과했습니다.
+
+커밋 제목은 「12단계 저장점」입니다. 정확한 해시는 커밋 후 `git log -1`과 제출 JSON의 `commit`으로 확인합니다. 위 제작 3의 미커밋 설명은 당시 검사 시점의 기록입니다. 커밋 후 `npm run bundle`을 실행해 `artifacts/submission.json`을 만들며 `bundle-notes.json`과 생성 JSON은 커밋하지 않습니다. 자기 점검은 현재 배포의 정적 파일·무인증 자료/기기/작전실 조회 실제 응답만 기록하고, 정상 승인·타인 자료·회수·복구 후 공격·공식 41종은 증거가 없으면 미실행으로 남깁니다. 자기 점검 결과는 새 커밋의 배포 증명이나 심판 판정이 아닙니다.
 
 ## 다음 단계의 코딩 도구에 전달할 규칙
 

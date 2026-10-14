@@ -57,3 +57,22 @@ test('first attack check reads public data.json without credentials', async () =
     globalThis.fetch = originalFetch;
   }
 });
+
+test('12단계 자기 점검은 실제 조회 응답과 미실행을 구분한다', async () => {
+  const originalFetch = globalThis.fetch;
+  const paths = [];
+  try {
+    globalThis.fetch = async (url, options) => {
+      paths.push(url.pathname);
+      assert.equal(options.redirect, 'error');
+      assert.equal(options.headers, undefined);
+      if (url.pathname === '/data.json') return Response.json({ notes: [] });
+      return Response.json({ error: 'AUTHENTICATION_REQUIRED' }, { status: 401 });
+    };
+    const attempts = await runAttackChecks({ ...config, step: 12 });
+    assert.deepEqual(paths, ['/data.json', '/api/notes', '/api/device-approval', '/api/operations-summary']);
+    assert.equal(attempts.length, 9);
+    assert.ok(attempts.slice(4).every(row => row.observed.startsWith('미실행:')));
+    assert.match(attempts[3].observed, /HTTP 401/);
+  } finally { globalThis.fetch = originalFetch; }
+});

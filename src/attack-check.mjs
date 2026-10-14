@@ -17,7 +17,7 @@ function authHeaders(token, origin, json = false) {
 }
 
 export async function runAttackChecks(config) {
-  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
+  if (![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].includes(config.step)) throw new Error('이 단계의 공격 점검을 src/attack-check.mjs에 구현해 주세요.');
   let app;
   try {
     app = new URL(config.publicAppUrl);
@@ -104,6 +104,26 @@ export async function runAttackChecks(config) {
     attempts.push({ attackId: 'burst_read_detection',
       expected: '동일 가명 주체의 10분 내 120건 초과 GET만 회수 제안 대상으로 식별됨',
       observed: '미실행: detect:test는 가상 사건 연습이며 운영 반 엔진 전달·실제 권한 변경 경로가 제공되지 않았습니다.' });
+  }
+
+  if (config.step === 12) {
+    const summaryResponse = await fetch(new URL('/api/operations-summary', app), {
+      redirect: 'error', signal: AbortSignal.timeout(10000),
+    });
+    const summaryBody = await responseJson(summaryResponse);
+    const summaryBlocked = summaryResponse.status === 401
+      && summaryBody && typeof summaryBody.error === 'string';
+    attempts.push({ attackId: 'anonymous_operations_summary', expected: '비로그인 작전실 조회가 JSON 401로 거부됨',
+      observed: summaryBlocked ? `JSON 오류 거부 확인 (HTTP ${summaryResponse.status})`
+        : `거부 확인 실패 또는 JSON 오류가 아님 (HTTP ${summaryResponse.status})` });
+    for (const [attackId, expected, reason] of [
+      ['normal_approved_note_read', '로그인·승인 기기의 자기 메모 조회 허용', '승인 기기의 공식 인증과 실측 기록 없음'],
+      ['cross_owner_note_access', '타인 메모 GET·PUT·DELETE 모두 거부', '공식 A/B 계정·대상·기기 매핑 없음'],
+      ['unregistered_revoked_access', '미등록 기기와 회수된 신원의 요청 거부', '운영 신원 회수 연결·실측 기록 없음'],
+      ['post_restore_unsigned_out_of_zone', '복구 후 서명 없는 변경·구역 밖 조회 거부', '운영 복구·서명 검증·구역 시험 기록 없음'],
+      ['official_41_attacks', '공식 41종 금지 요청 거부와 정상 요청 허용', '공식 시험 목록·엔진 결과 미연결'],
+    ]) attempts.push({ attackId, expected, observed: `미실행: ${reason}` });
+    return attempts;
   }
 
   if (![4, 5, 8].includes(config.step)) return attempts;
