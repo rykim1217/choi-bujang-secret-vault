@@ -13,10 +13,10 @@ export function createStudentView() {
         return element;
       };
       const showDevice = (parent, device) => {
-        appendText(parent, 'p', `기기: ${device.label} · ID: ${device.id} · 상태: ${deviceStates[device.status] ?? '확인 불가'}`);
+        appendText(parent, 'p', `기기: ${device.label} · ID: ${device.id} · 상태: ${deviceStates[device.status] ?? '확인 불가'} (${device.status})`);
       };
       const showSession = (parent, session) => {
-        appendText(parent, 'p', `세션 ID: ${session.id} · 상태: ${sessionStates[session.status] ?? '확인 불가'}`);
+        appendText(parent, 'p', `세션 ID: ${session.id} · 상태: ${sessionStates[session.status] ?? '확인 불가'} (${session.status})`);
       };
       const showResource = (title, resource, showData) => {
         const section = document.createElement('section');
