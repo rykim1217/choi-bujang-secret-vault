@@ -1,5 +1,11 @@
 # BYTE BACK 방어전 시작 틀 R5
 
+## 17단계 저장점
+
+`on-client/student/extension.mjs`의 `renderAiConnection`은 AI 연결 점검의 대기·진행·성공·실패를 구분하고, 시험 연결·앱 권한 확인·모델 수·점검 시각과 안전한 오류 코드·메시지를 표시합니다. `renderExplanation`은 선택한 사건의 설명 결과만 표시하며, 연결 점검을 사건 설명 성공으로 바꾸지 않습니다. 앞 단계 학생 함수와 제공 서버·인증 설정은 유지합니다.
+
+다시 확인하려면 `on-client` 폴더의 PowerShell에서 `npm run check`를 실행한 뒤 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1`로 앱을 켜고 브라우저에서 `http://127.0.0.1:5189/`를 엽니다. 기본 실행은 연결 없음 상태이며 실제 AI 연결·사건 설명 성공을 뜻하지 않습니다.
+
 ## 보너스 xdr-06 저장점
 
 `xdr/exfiltration/read-alerts.mjs`는 가상 Wazuh 경보 30건에서 시각·출발 주소·계정·규칙 수준·설명 30줄을 추출하고 비밀값 의심 문자열을 가립니다. `patterns.json`에는 MITRE T1041·T1048 근거와 수업용 조건을 기록했습니다. 같은 패턴 상수를 포함한 `decide.mjs`는 외부 파일·패키지·네트워크 없이 판단하며, 전송량 하나나 경보 수준만으로 차단하지 않습니다.
