@@ -6,17 +6,19 @@
 |---|---|
 | 저장소 | `https://github.com/rykim1217/choi-bujang-secret-vault` |
 | 브랜치 | `submission-stage22-repro` |
-| 최종 커밋 | `4b0ae6fd91c5d90f787c42e576171f6c80a1470a` |
+| 최종 커밋 | 이 문서를 포함한 제출 커밋의 40자리 해시. 제출 화면에 같은 값을 입력합니다. |
 | 앱 패키지 버전 | `on-client/package.json`의 `0.2.11` |
 | 확인 시각 | `2026-10-22 16:05:45 +09:00` |
 
-원래 작업 폴더와 Git 기록은 보존했습니다. 아래의 새 임시 폴더에 최종 브랜치를 clone하고 HEAD가 위 커밋과 같은지 확인했습니다.
+원래 작업 폴더와 Git 기록은 보존했습니다. 아래의 새 임시 폴더에 제출 브랜치를 clone하고 HEAD가 제출 화면에 입력한 최종 커밋과 같은지 확인합니다.
 
 ```text
 C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-4b0ae6f
 ```
 
 인증·SDP·NativeHost 설정 파일은 복사하지 않았습니다. 최종 커밋에는 제공 런타임과 화면 자산, OSV 스캐너 원문이 포함되어 있습니다.
+
+이 기록을 갱신한 제출 커밋에서는 실행 코드·화면 자산·lockfile은 유지하고, 실행에 사용되지 않는 모듈별 보조 README만 제출 트리에서 제외했습니다. 재현 결과는 실행 코드가 같은 최종 구성이라는 전제에서 기록합니다.
 
 | 확인한 제공 파일 | 역할 |
 |---|---|
@@ -49,7 +51,7 @@ npm run check
 
 | 절차 | 관찰 결과 | 확인 구분 |
 |---|---|---|
-| clone | HEAD가 `4b0ae6fd91c5d90f787c42e576171f6c80a1470a`와 일치 | 새 폴더 실행 확인 |
+| clone | 제출 화면에 입력한 최종 커밋과 HEAD가 일치해야 함 | 새 폴더 실행 확인 |
 | `node --version` | `v24.19.0` | 새 폴더 실행 확인 |
 | `npm --version` | `11.17.0` | 새 폴더 실행 확인 |
 | `npm ci --ignore-scripts --no-audit --no-fund` | 성공 | 새 폴더 실행 확인 |
