@@ -5,15 +5,17 @@
 | 항목 | 값 |
 |---|---|
 | 저장소 | `https://github.com/rykim1217/choi-bujang-secret-vault` |
-| 브랜치 | `submission-stage22-repro` |
-| 최종 커밋 | 이 문서를 포함한 제출 커밋의 40자리 해시. 제출 화면에 같은 값을 입력합니다. |
+| 브랜치 | `main` |
+| 재현 기준 커밋 | `9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62` |
+| 새 폴더에서 관찰한 `git rev-parse HEAD` | `9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62` |
+| 최종 제출 커밋 | 재현 뒤 이 문서만 갱신해 만든 새 커밋. 제출 화면에는 그 커밋의 실제 40자리 해시를 입력합니다. |
 | 앱 패키지 버전 | `on-client/package.json`의 `0.2.11` |
-| 확인 시각 | `2026-10-22 16:05:45 +09:00` |
+| 확인 시각 | `2026-10-22 16:27:53 +09:00` |
 
-원래 작업 폴더와 Git 기록은 보존했습니다. 아래의 새 임시 폴더에 제출 브랜치를 clone하고 HEAD가 제출 화면에 입력한 최종 커밋과 같은지 확인합니다.
+원래 작업 폴더와 Git 기록은 보존했습니다. 이번 재현은 `main`의 위 커밋을 대상으로 새 임시 폴더에서 실제로 수행했습니다. 이후 이 문서만 갱신하므로 재현 기준 커밋과 최종 제출 커밋은 다를 수 있으며, 두 커밋을 하나의 실행 성공으로 합쳐 쓰지 않습니다.
 
 ```text
-C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-4b0ae6f
+C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-9e8ebf
 ```
 
 인증·SDP·NativeHost 설정 파일은 복사하지 않았습니다. 최종 커밋에는 제공 런타임과 화면 자산, OSV 스캐너 원문이 포함되어 있습니다.
@@ -36,10 +38,12 @@ C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-4b0ae6f
 
 ## 새 환경 재현
 
-최종 커밋을 새 폴더에서 받은 뒤 21단계 설명서의 설치·검사·실행 순서에 맞춰 확인했습니다.
+재현 기준 커밋을 새 폴더에서 받은 뒤 21단계 설명서의 설치·검사·실행 순서에 맞춰 확인했습니다.
 
 ```powershell
-git clone --branch submission-stage22-repro --single-branch https://github.com/rykim1217/choi-bujang-secret-vault.git <새-폴더>
+git clone --branch main --single-branch https://github.com/rykim1217/choi-bujang-secret-vault.git C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-9e8ebf
+Set-Location C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-9e8ebf
+git rev-parse HEAD
 Set-Location <새-폴더>\on-client
 node --version
 npm --version
@@ -51,7 +55,8 @@ npm run check
 
 | 절차 | 관찰 결과 | 확인 구분 |
 |---|---|---|
-| clone | 제출 화면에 입력한 최종 커밋과 HEAD가 일치해야 함 | 새 폴더 실행 확인 |
+| clone | `main`에서 완료 | 새 폴더 실행 확인 |
+| `git rev-parse HEAD` | `9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62` | 새 폴더 실행 확인 |
 | `node --version` | `v24.19.0` | 새 폴더 실행 확인 |
 | `npm --version` | `11.17.0` | 새 폴더 실행 확인 |
 | `npm ci --ignore-scripts --no-audit --no-fund` | 성공 | 새 폴더 실행 확인 |
@@ -103,10 +108,23 @@ flowchart LR
 | 실행 진입점 | `tools/start-alekov.ps1`, `package.json`의 `start`·`demo`·`check` |
 | 문서 | `README.md`, `docs/STUDENT_RUNBOOK.md`, 이 재현 기록 |
 
-## 보존·복원과 제한
+## 데이터 보존·복원 계획과 제한
 
-- 원래 작업 폴더·학생 코드·앞 단계 Git 기록·미추적 파일은 보존했습니다.
-- 새 환경 복원은 저장소 URL과 최종 커밋을 clone하는 방식입니다. 미커밋 파일, 인증 정보, 외부 서비스 데이터는 백업되지 않습니다.
+- 원래 작업 폴더·학생 코드·앞 단계 Git 기록·미추적 파일은 보존했습니다. 이번 실행 당시 원본 `git status --short`에서 확인된 미추적 파일은 `alekov-starter-0.2.11.zip`, `make_topic_pngs.py`, `team-topic-1-university-api.svg`, `team-topic-2-forensics.svg`이며, 학생 소스의 미커밋 변경은 확인되지 않았습니다.
+- 학생 소스와 Git 기록을 별도로 보존할 때는 원래 폴더에서 다음 순서로 백업합니다. 이 백업 명령 자체는 이번 재현에서 실행하지 않았으며, 절차로만 기록합니다.
+
+  ```powershell
+  $project = 'C:\Users\user\Desktop\choi-bujang-secret-vault'
+  $backup = 'C:\Users\user\AppData\Local\Temp\rayeon-stage22-backup-9e8ebf'
+  New-Item -ItemType Directory -Force -Path $backup | Out-Null
+  git -C $project bundle create (Join-Path $backup 'repository.bundle') --all
+  git -C $project status --short | Set-Content (Join-Path $backup 'status.txt')
+  Copy-Item -LiteralPath (Join-Path $project 'on-client\student') -Destination (Join-Path $backup 'student') -Recurse
+  ```
+
+  `status.txt`에 미추적 학생 파일이 따로 기록되면 그 파일만 원래 상대 경로를 유지해 `backup` 아래에 복사합니다. `.env`, 토큰, 비밀번호, API 키와 인증 파일은 복사하거나 백업 묶음에 넣지 않습니다.
+- 복원할 때는 `repository.bundle`을 별도 폴더에 clone하고, 백업한 학생 파일을 같은 상대 경로에 복사한 뒤 `git -C <복원 폴더> rev-parse HEAD`, `git status --short`, 필요한 파일의 `Get-FileHash`를 원본 기록과 대조합니다. 해시가 맞지 않으면 실행하지 않고 복원을 중단합니다.
+- `src/actions/store.mjs`는 운영자가 명시적으로 제공한 기존 SQLite 파일에 조치·상태·감사 기록을 저장할 수 있습니다. 이번 새 환경 재현에서는 운영 DB를 지정하거나 복사하지 않았습니다. 운영 DB의 백업·복원은 학생 코드가 아니라 담당 운영자가 승인된 저장소 정책에 따라 수행하며, 인증 정보와 DB 원문은 Git이나 제출 문서에 넣지 않습니다.
 - `npm ci`와 예제 실행은 새 임시 폴더에서 수행했습니다. 일반 연결 모드의 대기 실패와 브라우저·HTTP 미확인은 성공으로 바꾸지 않았습니다.
 - 설명서의 명령·구성도·지원 범위는 현재 최종 커밋의 파일 경로와 대조했습니다. 서버가 이 기록의 명령을 대신 실행했다는 뜻은 아닙니다.
 - 22단계 통과는 원문 검토 기준의 수료이며 실제 운영 인증이나 `v1.0` 자동 인증이 아닙니다.
