@@ -135,12 +135,13 @@ flowchart LR
   O[OSV 공개 조회\n허용된 공개 패키지만]
 
   B -->|HTTP GET/POST| S
-  S -->|검증된 상태 입력| P
+  S -->|API 응답| B
+  B -->|검증·상태 정리 후 studentData(kind)| P
   S -->|계정·앱·기록·기기·세션·접근·조치| E
   S -->|package-lock과 설치 메타데이터 대조| V
   V -->|공개 조회| O
   S -->|AI 연결·설명 요청| A
-  P -->|DOM 표시만| B
+  P -->|DOM 반환·표시만| B
 ```
 
 구성도와 실제 경계는 다음과 같습니다.

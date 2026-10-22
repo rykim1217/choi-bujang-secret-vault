@@ -12,6 +12,14 @@
 
 npm start도 같은 서버를 켭니다. 기본 실행은 실제 회사 시스템(기존 엔진)에 연결되지 않은 상태입니다. npm run demo는 예제 자료로 화면을 보여 줄 뿐이며 실제 연결이나 성취가 아닙니다. npm run check는 student/extension.mjs의 문법만 확인합니다.
 
+## 현재 완성 기능과 구성
+
+현재 학생 화면은 `student/extension.mjs`의 `renderIdentity`, `renderDecision`, `renderEvents`, `renderStatus`, `renderVulnerabilities`, `renderAiConnection`, `renderExplanation`, `renderAction`이 제공 화면에서 정리된 입력을 받아 계정·업무 앱 판정·본인 보안 기록·기기·세션·설치 패키지 조회·앱 내부 AI 상태·조치 상태를 글자로 표시합니다. 앞 단계의 입력 계약과 `data-student-*` 속성은 유지합니다. 실제 SDP·XDR·AI·OSV 연결 성공이나 보안 조치 실행은 별도 확인 대상이며 이 화면의 표시만으로 확정하지 않습니다.
+
+주요 폴더는 `public/`(브라우저 화면과 제공 `app.js`), `src/`(로컬 서버·접근 제어/XDR 경계·AI·OSV 조회), `student/`(학생 표시 함수), `tools/`(PowerShell 실행 도구), `docs/`(학생 실행 설명서와 제공 문서)입니다. 제공 `public/app.js`와 `src/server.mjs`가 요청·응답 검증과 상태 전달을 담당하고, 학생 `student/extension.mjs`는 전달받은 입력을 DOM으로 표시합니다. 학생 함수는 서버 요청·비밀 입력·실제 조치 POST를 추가하지 않습니다.
+
+실행 위치·현재 확인한 Node.js/npm 버전·폴더 구조·구성도·오류 대응은 [학생 실행 설명서](docs/STUDENT_RUNBOOK.md)를 읽으세요. 현재 저장소에는 `package-lock.json`이 없고 기본 OSV 허용 목록도 비어 있으므로 설치 패키지 조회 완료나 취약점 없음을 가정하지 않습니다.
+
 ## 지킬 것
 
 - 기존 1~3차 프로젝트와 학생 파일은 지우거나 덮어쓰지 않습니다. 새 폴더에서 시작하거나, 이미 하던 프로젝트를 이어 씁니다.
