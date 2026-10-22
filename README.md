@@ -12,6 +12,12 @@
 
 다시 확인하려면 `on-client` 폴더의 PowerShell에서 `npm run check`를 실행하고, 실제 AI 설명 요청은 유료 요청을 반복하지 않는 범위에서 선택한 이벤트의 근거 ID와 표시 내용만 확인합니다. 실제 AI 연결·설명 응답은 이번 저장점에서 미확인입니다.
 
+## 19단계 저장점
+
+`on-client/student/extension.mjs`의 `renderAction`은 조치 준비·전달·접수·거절·실패·결과 불명·기한 만료·요청 오류를 원래 상태값과 함께 구분합니다. `succeeded`는 `observation.effectApplied === true`일 때만 효과 확인으로 표시하고 관측 시각·영수증 ID를 함께 보여 줍니다. 사건·근거·조치·대상·요청 식별자를 입력 범위에서만 표시하며, 버튼·POST 요청·인증 티켓은 추가하지 않습니다.
+
+다시 확인하려면 `on-client` 폴더의 PowerShell에서 `npm run check`를 실행합니다. 실제 조치 요청이나 효과 확인은 이번 저장점에서 실행하지 않았으며, 현재 `supportedActions`가 비어 있어 조치 준비 버튼이 나오지 않는 것이 정상입니다.
+
 ## 보너스 xdr-06 저장점
 
 `xdr/exfiltration/read-alerts.mjs`는 가상 Wazuh 경보 30건에서 시각·출발 주소·계정·규칙 수준·설명 30줄을 추출하고 비밀값 의심 문자열을 가립니다. `patterns.json`에는 MITRE T1041·T1048 근거와 수업용 조건을 기록했습니다. 같은 패턴 상수를 포함한 `decide.mjs`는 외부 파일·패키지·네트워크 없이 판단하며, 전송량 하나나 경보 수준만으로 차단하지 않습니다.
