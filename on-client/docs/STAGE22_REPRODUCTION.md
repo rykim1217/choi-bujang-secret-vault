@@ -76,6 +76,16 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 1884c7bde66711ad6ce6f
  1 file changed, 88 insertions(+), 11 deletions(-)
 ```
 
+그 뒤 제출한 `35a808ccf0ec84831f409d79150278525b4f633a`까지의 추가 변경도 확인했습니다.
+
+```text
+$ git diff --name-status 1884c7bde66711ad6ce6f16a509a584eb3ac2400 35a808ccf0ec84831f409d79150278525b4f633a
+M       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --numstat 1884c7bde66711ad6ce6f16a509a584eb3ac2400 35a808ccf0ec84831f409d79150278525b4f633a
+16      2       on-client/docs/STAGE22_REPRODUCTION.md
+```
+
 재현 기준과 `6be...`의 실행 코드·제공 화면·설정·잠금 파일이 같은지 확인한 파일 해시는 다음과 같습니다.
 
 | 파일 | `9e8...` | `6be...` |
@@ -88,7 +98,9 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 1884c7bde66711ad6ce6f
 
 예제 실행 종료 절차는 `on-client`에서 `node src/server.mjs --demo`를 실행하고 `케셰브 예제: http://127.0.0.1:5189` 출력으로 수신 대기를 확인하는 것입니다. `server.mjs`는 `listen` 뒤 자동 종료하지 않으므로, 같은 PowerShell에서 `Ctrl+C`를 눌러 종료합니다. 이번 직접 확인에서는 Windows 종료 코드 `-1073741510`이 관찰되었고, 재실행은 같은 명령을 다시 입력합니다. 이 기록은 종료 조작과 관찰된 코드를 남긴 것이며, 새 환경에서 서버가 실행했다는 추가 증명은 아닙니다.
 
-이 문서 보완을 포함한 다음 제출 커밋도 `on-client/docs/STAGE22_REPRODUCTION.md`만 변경하며, 실행 코드·화면 자산·설정·`package-lock.json`은 유지합니다. 최종 제출 커밋에서의 실제 범위는 다음 명령으로 확인할 수 있습니다.
+기본 설정 예시의 `ON_ENGINE_ADAPTER`는 비워 두었습니다. 제출본에는 `student/engine-adapter.mjs`가 없으므로, 이 예시를 그대로 사용하면 demo 또는 연결 끊김 상태로 시작합니다. 실제 연결은 담당자가 제공한 어댑터 파일을 별도로 받아 절대 경로로 지정해야 하며, 그 파일과 인증·SDP 설정은 제출본에 포함하지 않습니다.
+
+이 문서와 설정 예시를 포함한 다음 제출 커밋은 `on-client/docs/STAGE22_REPRODUCTION.md`와 `on-client/.env.example`만 변경하며, 실행 코드·화면 자산·`package-lock.json`은 유지합니다. 최종 제출 커밋에서의 실제 범위는 다음 명령으로 확인할 수 있습니다.
 
 ```powershell
 git diff --name-status 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 HEAD
