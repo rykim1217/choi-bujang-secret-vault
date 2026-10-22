@@ -6,6 +6,12 @@
 
 다시 확인하려면 `on-client` 폴더의 PowerShell에서 `npm run check`를 실행한 뒤 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1`로 앱을 켜고 브라우저에서 `http://127.0.0.1:5189/`를 엽니다. 기본 실행은 연결 없음 상태이며 실제 AI 연결·사건 설명 성공을 뜻하지 않습니다.
 
+## 18단계 저장점
+
+`on-client/student/extension.mjs`의 `renderExplanation`은 선택된 이벤트의 AI 설명을 참고용으로 표시하고, 현재 이벤트의 `evidenceIds`와 근거 문장을 대조합니다. 규칙·접속·세션·기기 상태·제안 이유·사람 확인 필요·미실행 상태를 함께 표시하며, 근거 불일치·실패·자료 없음에는 `data-student-explanation-event`를 붙이지 않습니다. 지원 조치가 없으면 제안이 없는 이유를 표시하고 실행 버튼은 만들지 않습니다. 다른 이벤트·새로고침·실패 화면은 새 DOM으로 교체됩니다.
+
+다시 확인하려면 `on-client` 폴더의 PowerShell에서 `npm run check`를 실행하고, 실제 AI 설명 요청은 유료 요청을 반복하지 않는 범위에서 선택한 이벤트의 근거 ID와 표시 내용만 확인합니다. 실제 AI 연결·설명 응답은 이번 저장점에서 미확인입니다.
+
 ## 보너스 xdr-06 저장점
 
 `xdr/exfiltration/read-alerts.mjs`는 가상 Wazuh 경보 30건에서 시각·출발 주소·계정·규칙 수준·설명 30줄을 추출하고 비밀값 의심 문자열을 가립니다. `patterns.json`에는 MITRE T1041·T1048 근거와 수업용 조건을 기록했습니다. 같은 패턴 상수를 포함한 `decide.mjs`는 외부 파일·패키지·네트워크 없이 판단하며, 전송량 하나나 경보 수준만으로 차단하지 않습니다.
