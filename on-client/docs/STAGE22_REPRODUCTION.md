@@ -37,6 +37,24 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 2778a760705086a6abfce
 
 위 비교에서 실행 코드, 화면 자산, `package-lock.json`은 변경되지 않았습니다. `2778...` 이후 이 문서를 다시 갱신하는 커밋이 생기면 그 커밋은 문서 변경만 포함하며, `9e8...`에서 수행한 실행 결과를 새 커밋에서 다시 실행했다고 주장하지 않습니다.
 
+검토 직전 제출본 `350a4195085f3ef77aa5759768fbd2aade2dfc9d`까지 재현 기준 커밋부터 누적 비교한 결과도 확인했습니다.
+
+```text
+$ git diff --name-status 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 350a4195085f3ef77aa5759768fbd2aade2dfc9d
+M       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 350a4195085f3ef77aa5759768fbd2aade2dfc9d
+ on-client/docs/STAGE22_REPRODUCTION.md | 55 +++++++++++++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 11 deletions(-)
+```
+
+이 문서 보완을 포함한 다음 제출 커밋도 `on-client/docs/STAGE22_REPRODUCTION.md`만 변경하며, 실행 코드·화면 자산·설정·`package-lock.json`은 유지합니다. 최종 제출 커밋에서의 실제 범위는 다음 명령으로 확인할 수 있습니다.
+
+```powershell
+git diff --name-status 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 HEAD
+git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 HEAD
+```
+
 | 확인한 제공 파일 | 역할 |
 |---|---|
 | `on-client/src/actions/service.mjs` | 보안 조치 상태·AI 설명 연결 |
