@@ -48,6 +48,32 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 350a4195085f3ef77aa57
  1 file changed, 44 insertions(+), 11 deletions(-)
 ```
 
+그 뒤 제출한 `6be1d45727f6786d616a0bbf7c8d08a7f4d136ff`까지의 추가 변경도 확인했습니다.
+
+```text
+$ git diff --name-status 350a4195085f3ef77aa5759768fbd2aade2dfc9d 6be1d45727f6786d616a0bbf7c8d08a7f4d136ff
+M       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --numstat 350a4195085f3ef77aa5759768fbd2aade2dfc9d 6be1d45727f6786d616a0bbf7c8d08a7f4d136ff
+18      0       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 6be1d45727f6786d616a0bbf7c8d08a7f4d136ff
+ on-client/docs/STAGE22_REPRODUCTION.md | 73 +++++++++++++++++++++++++++++-----
+ 1 file changed, 62 insertions(+), 11 deletions(-)
+```
+
+재현 기준과 `6be...`의 실행 코드·제공 화면·설정·잠금 파일이 같은지 확인한 파일 해시는 다음과 같습니다.
+
+| 파일 | `9e8...` | `6be...` |
+|---|---|---|
+| `on-client/student/extension.mjs` | `d69b8436050734ef03f3b07cd90545e038fa8271` | `d69b8436050734ef03f3b07cd90545e038fa8271` |
+| `on-client/public/app.js` | `002bfdf421f0005c14bb98dcbf3d0163f4be091d` | `002bfdf421f0005c14bb98dcbf3d0163f4be091d` |
+| `on-client/src/server.mjs` | `42774051fa29614e28f4f823db41fe33942166ed` | `42774051fa29614e28f4f823db41fe33942166ed` |
+| `on-client/package.json` | `1a4bd0c7c9f4e2ae335bea28f28926ac015f225f` | `1a4bd0c7c9f4e2ae335bea28f28926ac015f225f` |
+| `on-client/package-lock.json` | `757789652fad37f59b50214aea8f3cf983bdc7dd` | `757789652fad37f59b50214aea8f3cf983bdc7dd` |
+
+예제 실행 종료 절차는 `on-client`에서 `node src/server.mjs --demo`를 실행하고 `케셰브 예제: http://127.0.0.1:5189` 출력 뒤 PowerShell 프롬프트가 돌아오는지 확인하는 것입니다. 프롬프트가 돌아오지 않으면 같은 PowerShell에서 `Ctrl+C`로 종료하고, 재실행은 같은 명령을 다시 입력합니다. 이 종료 절차는 문서화한 확인 순서이며, 새 환경에서 서버가 실행했다는 추가 증명은 아닙니다.
+
 이 문서 보완을 포함한 다음 제출 커밋도 `on-client/docs/STAGE22_REPRODUCTION.md`만 변경하며, 실행 코드·화면 자산·설정·`package-lock.json`은 유지합니다. 최종 제출 커밋에서의 실제 범위는 다음 명령으로 확인할 수 있습니다.
 
 ```powershell
