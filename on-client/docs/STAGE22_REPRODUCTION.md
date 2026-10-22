@@ -105,6 +105,23 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 2e21d3ca4af393eb49f61
 
 현재 제출본 `2e21...`에서도 `student/extension.mjs`, `public/app.js`, `src/server.mjs`, `package.json`, `package-lock.json`의 파일 해시는 재현 기준 `9e8...`과 동일하며, 변경된 것은 설정 예시와 재현 기록뿐입니다.
 
+그 뒤 제출한 `c3ce1bea58b9b14b5cf4e8e2dc5e687c700907a4`까지의 추가 변경도 확인했습니다.
+
+```text
+$ git diff --name-status 2e21d3ca4af393eb49f61bd49fa080c68388d2d6 c3ce1bea58b9b14b5cf4e8e2dc5e687c700907a4
+M       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --numstat 2e21d3ca4af393eb49f61bd49fa080c68388d2d6 c3ce1bea58b9b14b5cf4e8e2dc5e687c700907a4
+19      0       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 c3ce1bea58b9b14b5cf4e8e2dc5e687c700907a4
+ on-client/.env.example                 |   4 +-
+ on-client/docs/STAGE22_REPRODUCTION.md | 146 ++++++++++++++++++++++++++++++---
+ 2 files changed, 137 insertions(+), 13 deletions(-)
+```
+
+`c3ce...`까지도 실행 코드·제공 화면·서버·`package.json`·`package-lock.json`은 변경되지 않았고, 설정 예시와 재현 기록만 변경되었습니다.
+
 재현 기준과 `6be...`의 실행 코드·제공 화면·설정·잠금 파일이 같은지 확인한 파일 해시는 다음과 같습니다.
 
 | 파일 | `9e8...` | `6be...` |
