@@ -22,6 +22,21 @@ C:\Users\user\AppData\Local\Temp\rayeon-stage22-final-9e8ebf
 
 이 기록을 갱신한 제출 커밋에서는 실행 코드·화면 자산·lockfile은 유지하고, 실행에 사용되지 않는 모듈별 보조 README만 제출 트리에서 제외했습니다. 재현 결과는 실행 코드가 같은 최종 구성이라는 전제에서 기록합니다.
 
+## 재현 기준 커밋과 제출본의 변경 내역
+
+재현은 `9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62`에서 수행했고, 그 결과를 기록한 제출본은 `2778a760705086a6abfceaa4d95aa21d188a70cd`입니다. 두 커밋의 실제 Git 비교 결과는 다음과 같습니다.
+
+```text
+$ git diff --name-status 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 2778a760705086a6abfceaa4d95aa21d188a70cd
+M       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 2778a760705086a6abfceaa4d95aa21d188a70cd
+ on-client/docs/STAGE22_REPRODUCTION.md | 40 ++++++++++++++++++++++++----------
+ 1 file changed, 29 insertions(+), 11 deletions(-)
+```
+
+위 비교에서 실행 코드, 화면 자산, `package-lock.json`은 변경되지 않았습니다. `2778...` 이후 이 문서를 다시 갱신하는 커밋이 생기면 그 커밋은 문서 변경만 포함하며, `9e8...`에서 수행한 실행 결과를 새 커밋에서 다시 실행했다고 주장하지 않습니다.
+
 | 확인한 제공 파일 | 역할 |
 |---|---|
 | `on-client/src/actions/service.mjs` | 보안 조치 상태·AI 설명 연결 |
