@@ -62,6 +62,20 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 6be1d45727f6786d616a0
  1 file changed, 62 insertions(+), 11 deletions(-)
 ```
 
+그 뒤 제출한 `1884c7bde66711ad6ce6f16a509a584eb3ac2400`까지의 추가 변경도 확인했습니다.
+
+```text
+$ git diff --name-status 6be1d45727f6786d616a0bbf7c8d08a7f4d136ff 1884c7bde66711ad6ce6f16a509a584eb3ac2400
+M       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --numstat 6be1d45727f6786d616a0bbf7c8d08a7f4d136ff 1884c7bde66711ad6ce6f16a509a584eb3ac2400
+26      0       on-client/docs/STAGE22_REPRODUCTION.md
+
+$ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 1884c7bde66711ad6ce6f16a509a584eb3ac2400
+ on-client/docs/STAGE22_REPRODUCTION.md | 99 ++++++++++++++++++++++++++++++----
+ 1 file changed, 88 insertions(+), 11 deletions(-)
+```
+
 재현 기준과 `6be...`의 실행 코드·제공 화면·설정·잠금 파일이 같은지 확인한 파일 해시는 다음과 같습니다.
 
 | 파일 | `9e8...` | `6be...` |
@@ -72,7 +86,7 @@ $ git diff --stat 9e8ebfcb5cbbbc9a7283a994a2b24732ec8a2c62 6be1d45727f6786d616a0
 | `on-client/package.json` | `1a4bd0c7c9f4e2ae335bea28f28926ac015f225f` | `1a4bd0c7c9f4e2ae335bea28f28926ac015f225f` |
 | `on-client/package-lock.json` | `757789652fad37f59b50214aea8f3cf983bdc7dd` | `757789652fad37f59b50214aea8f3cf983bdc7dd` |
 
-예제 실행 종료 절차는 `on-client`에서 `node src/server.mjs --demo`를 실행하고 `케셰브 예제: http://127.0.0.1:5189` 출력 뒤 PowerShell 프롬프트가 돌아오는지 확인하는 것입니다. 프롬프트가 돌아오지 않으면 같은 PowerShell에서 `Ctrl+C`로 종료하고, 재실행은 같은 명령을 다시 입력합니다. 이 종료 절차는 문서화한 확인 순서이며, 새 환경에서 서버가 실행했다는 추가 증명은 아닙니다.
+예제 실행 종료 절차는 `on-client`에서 `node src/server.mjs --demo`를 실행하고 `케셰브 예제: http://127.0.0.1:5189` 출력으로 수신 대기를 확인하는 것입니다. `server.mjs`는 `listen` 뒤 자동 종료하지 않으므로, 같은 PowerShell에서 `Ctrl+C`를 눌러 종료합니다. 이번 직접 확인에서는 Windows 종료 코드 `-1073741510`이 관찰되었고, 재실행은 같은 명령을 다시 입력합니다. 이 기록은 종료 조작과 관찰된 코드를 남긴 것이며, 새 환경에서 서버가 실행했다는 추가 증명은 아닙니다.
 
 이 문서 보완을 포함한 다음 제출 커밋도 `on-client/docs/STAGE22_REPRODUCTION.md`만 변경하며, 실행 코드·화면 자산·설정·`package-lock.json`은 유지합니다. 최종 제출 커밋에서의 실제 범위는 다음 명령으로 확인할 수 있습니다.
 
@@ -120,7 +134,7 @@ npm run check
 | `npm --version` | `11.17.0` | 새 폴더 실행 확인 |
 | `npm ci --ignore-scripts --no-audit --no-fund` | 성공 | 새 폴더 실행 확인 |
 | `npm run check` | `node --check student/extension.mjs` 성공 | 새 폴더 실행 확인 |
-| `npm run demo`와 같은 `node src/server.mjs --demo` 실행 | `케셰브 예제: http://127.0.0.1:5189` 출력 후 종료 | 예제 실행 확인 |
+| `npm run demo`와 같은 `node src/server.mjs --demo` 실행 | `케셰브 예제: http://127.0.0.1:5189` 출력 후 수신 대기, `Ctrl+C`로 종료·Windows 종료 코드 `-1073741510` 관찰 | 예제 실행·종료 직접 확인 |
 | 일반 실행 `-Port 5193 -WaitSeconds 5` | 서버의 `케셰브 연결 확인` 출력 뒤 5초 대기 실패 | 실행 실패 확인 |
 | 브라우저·HTTP 200 | 이 기록에서는 확인하지 못함 | 미확인 |
 
