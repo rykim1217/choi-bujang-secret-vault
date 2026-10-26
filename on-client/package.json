@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start:pc": "node student/pc-server.mjs",
     "start": "node src/server.mjs",
     "demo": "node src/server.mjs --demo",
     "check": "node --check student/extension.mjs"
