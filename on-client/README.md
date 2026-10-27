@@ -1,39 +1,29 @@
-# 라요 보안 Agent 0.2.11
+> **2026-10-27 학생 통합본 안내**: 일반 실행은 on-client에서 `npm.cmd start`, 기본 주소는 http://127.0.0.1:5189/ 입니다. PC 추가 화면은 보호 현황의 학생 구현 영역에서 표시합니다. [최신 실행 안내](docs/START_HERE.md)를 먼저 보세요. `npm run start:provided` 또는 제공 start-alekov.ps1은 원본 제공 서버만 실행하므로 학생 추가 PC API는 제공하지 않습니다. 아래 공식/과거 안내의 실행 방식과 구분합니다. 승인 host 지원은 별도 미검증입니다.
 
-## 지금 만든 라요 실행하기 · PC 대시보드
+# 내 보안 Agent 시작 틀 0.2.14
 
-처음 사용하는 분은 [처음 실행 안내](docs/START_HERE.md)를 따라 주세요. Windows의 일반 권한 PowerShell에서 **이 README와 package.json이 들어 있는 on-client 폴더**를 열고 실행합니다.
+이 보안 Agent는 회사 직원이 자기 로그인 상태, 업무 앱 접속 결과, 최근 접속 기록과 보안 경보를 보는 보안 앱입니다. 13단계부터 22단계까지 이 프로젝트 하나로 화면을 채워 가며 완성합니다. 처음이라면 docs/GETTING_STARTED_STUDENT.md부터 읽습니다. 무엇을 왜 만드는지와 단계별 순서가 그 문서에 있습니다.
 
-```powershell
-node --version
-npm.cmd --version
-npm.cmd run check
-npm.cmd run start:pc
-```
+이 시작 틀을 받은 것만으로 단계를 통과하지 않습니다. 단계마다 docs/STUDENT_PROMPTS.md의 안내를 수업용 AI에 붙여 넣어 student/extension.mjs를 고치고, 화면에서 확인하고, 커밋한 뒤 ALEPH에 제출합니다. 제출하면 서버가 그 커밋의 코드를 받아 AI가 단계 과제 기준으로 읽고 판정합니다. 코드를 실행해서 판정하지 않습니다.
 
-Node.js 기준 버전은 24.19.0, 현재 PC에서 확인한 npm은 11.17.0입니다. 서버에 `라요 PC 대시보드: http://127.0.0.1:5190/`가 나오면 브라우저에서 해당 주소를 엽니다. 창은 켜 둡니다. 종료는 Ctrl+C, 재실행은 같은 명령입니다. `npm.cmd`는 PowerShell의 npm.ps1 실행 정책 문제를 피하기 위해 사용하며 실행 정책을 변경하지 않습니다.
+## 켜기
 
-- 내 PC 상태: 실제 CPU·메모리·시스템 드라이브 여유 공간, 시각·단위·직전 비교·기록.
-- 연결·Windows 기록: 네트워크 구성, 방화벽 설정 읽기, 최근 24시간 System/Application의 경고·오류 건수. 침해나 공격 탐지 결과가 아닙니다.
-- 읽을 수 없으면 확인 불가와 이유를 표시합니다. 예시 데이터로 대체하지 않으며 관리자 권한을 요구하거나 보안 설정을 변경하지 않습니다.
-- 기존 보호 현황·업무 앱·보안 기록은 실제 서버 연결이 없는 현재 구성에서 조회되지 않습니다. 상단 연결 없음 및 SDP 미연결은 로컬 PC 조회와 별개입니다.
-- 아직 설치 묶음과 `package-app`은 구현하지 않았습니다. 현재는 프로젝트 폴더에서 실행하는 버전입니다.
+검수 환경은 Node.js 24.19.0이며 외부 npm 의존성이 없습니다. 이 폴더의 PowerShell에서 아래를 실행하고 PC 브라우저로 http://127.0.0.1:5189 를 엽니다. 자세한 켜기·끄기·다시 켜기는 docs/STUDENT_LAUNCH_GUIDE.md에 있습니다.
 
-학생 추가 파일은 `student/pc-*`이며, 실행 진입점은 `student/pc-server.mjs`입니다. `extension.mjs`만 복사하면 대시보드가 포함되지 않습니다. 전체 프로젝트 구조를 유지하세요. 확인 범위와 남은 검증은 [5일차 기록](docs/DAY5_RUN_REVIEW.md)에 있습니다.
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1
 
-## 기존 22단계 실행 안내 · 별도 화면
+npm start도 같은 서버를 켭니다. 기본 실행은 실제 회사 시스템(기존 엔진)에 연결되지 않은 상태입니다. npm run demo는 예제 자료로 화면을 보여 줄 뿐이며 실제 연결이나 성취가 아닙니다. npm run check는 student/extension.mjs의 문법만 확인합니다.
 
-아래 안내는 기존 제공 화면(5189)을 위한 기록입니다. 위의 PC 대시보드(5190) 실행 방법과 구분하세요. 과거 확인 시점의 미확인 표시는 그 당시 기록을 뜻합니다.
+## 지킬 것
 
-목적: 계정·기기·현재 세션, 알림·도움정보, 업무 앱 판정, 보안 기록/XDR, OSV·AI 상태와 보안 조치 상태를 표시합니다.
+- 기존 1~3차 프로젝트와 학생 파일은 지우거나 덮어쓰지 않습니다. 새 폴더에서 시작하거나, 이미 하던 프로젝트를 이어 씁니다.
+- AI 열쇠·비밀번호·토큰을 코드, 커밋, 캡처, 도움정보에 넣지 않습니다. 주소나 열쇠를 직접 입력하는 칸도 만들지 않습니다.
+- .env.example에는 비밀 없는 설정만 있습니다.
 
-학생 구현은 `student/extension.mjs`의 8개 `render*` 함수입니다. `public/`·`src/`는 요청·검증·상태 전달을 제공하고 학생 코드는 DOM을 표시합니다. 범위는 근거·규칙에 연결된 기록, AI 참고 설명, 조치 준비·사람 확인·결과 조회입니다.
+## 더 읽을 곳
 
-Windows PowerShell에서 Node `v24.19.0`, npm `11.17.0`, 포트 `5189`를 확인했습니다. 서버 기동·브라우저 접속은 이 검토에서 실행하지 않았습니다.
-
-```powershell
-Set-Location "C:\Users\user\Desktop\choi-bujang-secret-vault\on-client"
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1
-```
-
-주소는 http://127.0.0.1:5189/입니다. 주요 폴더는 `public/`(제공 화면), `src/`(제공 서버·연동), `student/`(학생 표시), `tools/`(실행), `docs/`(문서)입니다. 설치·구성도·장애 안내는 [학생 실행 설명서](docs/STUDENT_RUNBOOK.md)에 있습니다. `package-lock.json`과 `npm ci`를 사용하며 외부 연결·OSV는 미확인입니다.
+- 단계별 안내와 AI에 붙여 넣을 문장: docs/STUDENT_PROMPTS.md
+- 단계별 확인 항목: docs/CURRICULUM.json, docs/IMPLEMENTATION_CONTRACT.md
+- 오류 코드별 해결: docs/CONNECTION_TROUBLESHOOT.md
+- 시작 틀 업데이트(내 파일 보존): docs/STARTER_UPDATE.md
+- 실제 회사 시스템(SDP)·앱 안 AI 연결은 담당자가 따로 안내할 때만 씁니다: docs/SDP_HOST_CONNECTION.md, docs/AI_SETUP_GUIDE.md. 이 연결은 앱을 처음 켜고 13~16단계 화면을 만들거나 공식 AI 코드 판정을 받기 위한 전제 조건은 아닙니다. 다만 17단계 이후의 실제 연결과 새 환경 재현은 해당 단계의 기준에 따라 따로 확인합니다.

@@ -1,5 +1,6 @@
 import {createSystemView} from './pc-system-view.mjs';
 const el=(tag,text,className)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;};
+export function createPcDashboard(){
 const root=el('section',undefined,'pc-dashboard');root.setAttribute('aria-labelledby','pc-title');
 const heading=el('h1','내 PC 상태');heading.id='pc-title';
 root.append(heading,el('p','학생 추가 기능 · 이 PC의 실제 측정 · 관리자 권한 사용 안 함','pc-note'));
@@ -12,40 +13,14 @@ const log=el('section',undefined,'pc-log');
 const toolbar=el('div',undefined,'pc-toolbar');toolbar.append(button,live);
 const errors=el('section',undefined,'pc-query-errors');errors.hidden=true;errors.setAttribute('role','alert');
 root.append(toolbar,errors,cards,chart,log);
-const main=document.querySelector('#main');
-const security=el('details',undefined,'pc-security');security.append(el('summary','기존 보안 기능 펼쳐 보기 · 계정·업무 앱·보안 기록'));
-while(main.firstChild)security.append(main.firstChild);
-const sidebar=document.querySelector('.sidebar');
-main.append(root,security);
-const systemView=createSystemView();main.insertBefore(systemView,security);
-const nav=document.querySelector('#nav');
-const extraNav=el('div',undefined,'pc-extra-nav');
-const menuItems=[['내 PC 상태',root,null],['연결·Windows 기록',systemView,null],['보호 현황',security,'tab-protection'],['업무 앱',security,'tab-apps'],['보안 기록',security,'tab-records']];
-function selectMenu(index){
-  const [,view,target]=menuItems[index];
-  if(target)document.getElementById(target).click();
-  root.hidden=view!==root;systemView.hidden=view!==systemView;security.hidden=view!==security;
-  if(view===security)security.open=true;
-  [...extraNav.children].forEach((item,i)=>{
-    if(i===index)item.setAttribute('aria-current','page');else item.removeAttribute('aria-current');
-  });
+const holder=el('section',undefined,'rayo-local-features');
+const tabs=el('div',undefined,'pc-local-tabs');tabs.setAttribute('aria-label','학생 추가 기능');
+const systemView=createSystemView();
+for(const [label,view] of [['내 PC 상태',root],['연결·Windows 기록',systemView]]){
+ const tab=el('button',label);tab.type='button';tab.setAttribute('aria-pressed',String(view===root));
+ tab.addEventListener('click',()=>{root.hidden=view!==root;systemView.hidden=view!==systemView;for(const item of tabs.children)item.setAttribute('aria-pressed',String(item===tab));});tabs.append(tab);
 }
-menuItems.forEach(([label],index)=>{
-  const item=el('button',label);item.type='button';
-  item.addEventListener('click',()=>selectMenu(index));
-  item.addEventListener('keydown',event=>{
-    let next;
-    if(event.key==='ArrowDown')next=(index+1)%menuItems.length;
-    if(event.key==='ArrowUp')next=(index+menuItems.length-1)%menuItems.length;
-    if(event.key==='Home')next=0;
-    if(event.key==='End')next=menuItems.length-1;
-    if(next===undefined)return;
-    event.preventDefault();extraNav.children[next].focus();selectMenu(next);
-  });extraNav.append(item);
-});
-sidebar.insertBefore(extraNav,nav);
-nav.hidden=true;
-selectMenu(0);
+holder.append(tabs,root,systemView);
 let rows=[];
 const number=n=>n.toLocaleString('ko-KR',{maximumFractionDigits:1});
 const gb=n=>number(n/1e9);
@@ -130,4 +105,6 @@ async function measure(){
 button.addEventListener('click',measure);render();measure();
 
 let lastPlotWidth=0;
-new ResizeObserver(()=>{const width=chart.clientWidth;if(width!==lastPlotWidth){lastPlotWidth=width;render();}}).observe(chart);
+new ResizeObserver(()=>{const width=chart.clientWidth;if(width>0&&width!==lastPlotWidth){lastPlotWidth=width;render();}}).observe(chart);
+return holder;
+}

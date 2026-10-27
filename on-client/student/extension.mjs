@@ -1,6 +1,17 @@
 // 이 파일은 학생이 같은 프로젝트에서 이어서 구현합니다.
 // 제공 UI를 받은 것만으로 단계 완료를 인정하지 않습니다.
 export function createStudentView() {
+  document.title='라요 · ZTNA & XDR';
+  const brand=document.querySelector('.brand-name');if(brand?.firstChild?.nodeType===3)brand.firstChild.textContent='라요 ';
+  // Student-owned UI entry. Existing eight render contracts remain intact.
+  const localFeatures=document.createElement('section');
+  localFeatures.className='rayo-local-features-slot';
+  const pending=document.createElement('p');pending.textContent='학생 PC 조회 화면 준비 중';localFeatures.append(pending);
+  const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='/student/pc-dashboard.css';
+  sheet.addEventListener('error',()=>{pending.textContent='추가 PC 화면의 꾸밈 파일을 읽지 못했습니다. 프로젝트 안내의 npm start 실행 경로를 확인하세요.';});document.head.append(sheet);
+  import('/student/pc-dashboard.mjs').then(module=>{localFeatures.replaceChildren(module.createPcDashboard());}).catch(()=>{
+    pending.textContent='추가 PC 조회 화면 확인 불가: 이 실행 환경이 학생 추가 모듈을 제공하지 않습니다. 실행 안내를 확인하세요. 기존 보안 기능과는 별개입니다.';
+  });
   let eventViewState = {
     filters: { kind: 'all', appId: 'all', access: 'all' },
     selectedId: null,
@@ -9,6 +20,7 @@ export function createStudentView() {
   return {
     renderIdentity({ me, devices, sessions }) {
       const root = document.createElement('section');
+      root.append(localFeatures);
       const deviceStates = { compliant: '보안 기준 충족', noncompliant: '보안 기준 미충족', unknown: '확인 불가' };
       const sessionStates = { active: '활성', expired: '만료', revoked: '철회됨', unknown: '확인 불가' };
       const appendText = (parent, tag, text) => {

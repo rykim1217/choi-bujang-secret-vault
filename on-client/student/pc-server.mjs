@@ -45,11 +45,11 @@ server.on('request',async(req,res)=>{
     if(assets.has(path)){
       const [file,mime]=assets.get(path);body=await readFile(new URL(file,import.meta.url));type=mime;
     }else{
-      body=(await readFile(new URL('../public/index.html',import.meta.url),'utf8')).replace('</head>','<link rel="stylesheet" href="/student/pc-dashboard.css"><script type="module" src="/student/pc-dashboard.mjs"></script></head>');type='text/html';
+      body=await readFile(new URL('../public/index.html',import.meta.url),'utf8');type='text/html';
     }
     res.writeHead(200,{...headers,'content-type':`${type}; charset=utf-8`});res.end(body);
   }catch{res.writeHead(503,{...headers,'content-type':'application/json; charset=utf-8'});res.end(JSON.stringify({error:'PC 상태를 조회하지 못했습니다.'}));}
 });
-const port=Number(process.env.ON_PORT??5190);
+const port=Number(process.env.ON_PORT??5189);
 if(!Number.isInteger(port)||port<1024||port>65535)throw Error('INVALID_PORT');
 server.listen(port,'127.0.0.1',()=>console.log(`라요 PC 대시보드: http://127.0.0.1:${port}/`));

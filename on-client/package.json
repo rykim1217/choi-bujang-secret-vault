@@ -1,13 +1,14 @@
 {
   "name": "alekov-client-starter",
-  "version": "0.2.11",
+  "version": "0.2.14",
   "private": true,
   "type": "module",
   "scripts": {
-    "start:pc": "node student/pc-server.mjs",
-    "start": "node src/server.mjs",
+    "start": "node student/pc-server.mjs",
     "demo": "node src/server.mjs --demo",
-    "check": "node --check student/extension.mjs"
+    "check": "node --check student/extension.mjs",
+    "start:provided": "node src/server.mjs",
+    "start:pc": "node student/pc-server.mjs"
   },
   "engines": {
     "node": "24.19.0"
