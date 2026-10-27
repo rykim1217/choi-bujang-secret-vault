@@ -1,12 +1,12 @@
 # 완성 기록틀 · 라요
 
-> 후속 실행 수정: 공식 보안 준비가 빠지는 문제를 고쳐 tools/start-alekov.ps1로 실행합니다. npm start도 같은 도구를 호출합니다. 실제 확인과 SDP 미연결 원인은 docs/LAUNCH_AND_SDP_FIX.md에 구분했습니다. 아래의 단순 npm start·직접 Node 실행 설명은 이전 시점의 기록과 구분합니다.
+> 후속 실행 수정: 공식 보안 준비가 빠지는 문제를 고쳐 tools/start-alekov.ps1로 실행합니다. npm start도 같은 도구를 호출합니다. 실제 확인과 SDP 미연결 원인은 docs/LAUNCH_AND_SDP_FIX.md에 구분했습니다. 아래의 과거 확인 결과는 당시 버전의 기록이며 현재 제출 커밋 전체를 새로 시험한 결과로 합산하지 않습니다.
 
 ## 2026-10-27 복구 이후 실행 구조 정정
 
-아래 기록의 0.2.11·5190·독립 메뉴 설명은 당시 이력입니다. 현재는 공식 0.2.14 제공 파일을 검증해 복구하고, 추가 PC 화면을 기존 student/extension.mjs의 보호 현황 학생 영역으로 통합했습니다. 표준 실행은 on-client에서 `npm.cmd start`, 기본 주소 http://127.0.0.1:5189/ 입니다. 기존 세 메뉴를 유지합니다. 조회용 추가 서버는 student/pc-server.mjs에서 공식 createOnServer를 재사용하며, 제공 서버 원문 자체를 임의 수정하지 않았습니다.
+아래 기록의 0.2.11·5190·독립 메뉴 설명은 당시 이력입니다. 현재는 공식 0.2.14 제공 파일을 검증해 복구하고, 추가 PC 화면을 기존 student/extension.mjs의 보호 현황 학생 영역으로 통합했습니다. 표준 실행은 on-client에서 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1`이며 기본 주소는 http://127.0.0.1:5189/ 입니다. 기본 포트가 사용 중이면 `-Port 5190`을 붙이고 http://127.0.0.1:5190/ 으로 접속합니다. npm start도 같은 실행 도구를 호출합니다. 기존 세 메뉴를 유지합니다. 조회용 추가 서버는 student/pc-server.mjs에서 공식 createOnServer를 재사용하며, 제공 서버 원문 자체를 임의 수정하지 않았습니다.
 
-보존 백업·공식 파일 해시 확인·변경 범위·실제 확인은 docs/OFFICIAL_ALIGNMENT_REVIEW.md의 ‘이후 로컬 복구·통합 결과’와 docs/CURRENT_RUN_STRUCTURE.md를 참조합니다. 승인 host·설치형 지원 및 공식 과제 통과는 여전히 미확인입니다. 아래에 적힌 과거 커밋과 혼동하지 말고 제출할 때 git rev-parse HEAD로 현재 커밋을 확인해야 합니다. GitHub 반영 여부는 별도 확인합니다.
+보존 백업·공식 파일 해시 확인·변경 범위·실제 확인은 docs/OFFICIAL_ALIGNMENT_REVIEW.md의 ‘이후 로컬 복구·통합 결과’와 docs/CURRENT_RUN_STRUCTURE.md를 참조합니다. 승인 host·설치형 지원 및 공식 과제 통과는 여전히 미확인입니다. 아래에 적힌 과거 커밋과 혼동하지 말고 제출할 때 git rev-parse HEAD로 현재 커밋을 확인해야 합니다. 코드 기준 커밋 fc4f3711358e2ec69b522f6b60e75571a9c861dc는 GitHub main에 push하고 원격 해시 일치를 확인했습니다. 이번 문서 정정 이후 제출할 커밋은 git rev-parse HEAD로 다시 확인합니다.
 
 작성일: 2026-10-27 (한국 시간). 방어전 페이지의 완성 기록틀을 기준으로 정리한 개인 기록입니다. 별도 제출 필수 파일이 아닙니다. 최종 제출은 현재 안내에 따라 GitHub 저장소 주소와 해당 커밋 번호로 진행합니다.
 
@@ -57,9 +57,10 @@
 
 - 실행 환경: Windows, Node v24.19.0. 기존 확인 npm 11.17.0.
 - 필요한 연결·파일·사전 설치물: Node 설치, 기존 on-client의 package.json·student·public·src 등 전체 구조. 현재 외부 의존 패키지는 없습니다. Windows 조회는 일반 권한을 사용합니다. SDP 등 실제 연동에는 별도 공식 설정 필요.
-- 확인한 코드 커밋: 4f7a734f1db4a0268785cc25274f8f5fdeae6609
-- 현재 기록 파일: 위 코드 커밋 확인 후 새로 작성한 문서입니다. 문서까지 포함하는 최종 제출 커밋은 아직 미확정입니다.
-- GitHub 원격 main 확인값: 5c87e7f53d1b8490cc154ffd95dd40a33db24cc6. 10월 27일 git ls-remote로 확인했으며 로컬 코드 커밋과 다릅니다. 로컬 코드가 GitHub에 반영됐다고 기록하지 않습니다.
+- 과거 재실행 확인 코드 커밋: 4f7a734f1db4a0268785cc25274f8f5fdeae6609. 아래 11:06:18 시험의 기준이며 현재 최종 버전 전체의 시험 결과로 표시하지 않습니다.
+- 후속 실행·SDP 상태 수정 코드 커밋: fc4f3711358e2ec69b522f6b60e75571a9c861dc. 확인 범위는 docs/LAUNCH_AND_SDP_FIX.md 참조.
+- 최종 제출 커밋: 이 문서 정정을 포함해 커밋·push한 뒤 git rev-parse HEAD로 나온 40자리 번호를 제출 칸에 적습니다. 문서가 자기 자신을 포함한 커밋 해시를 미리 기록하지 않습니다.
+- GitHub 반영 확인: 후속 코드 커밋 fc4f3711358e2ec69b522f6b60e75571a9c861dc를 main에 push했고 원격 main의 해시 일치를 확인했습니다. 문서 정정 후에는 새 최종 커밋과 원격 main의 일치를 다시 확인합니다.
 - 실행 패키지 경로: 해당 없음. package-app 명령이 없어 포장 미실시.
 - 소스와 패키지가 같은 커밋에서 나왔는지: 해당 없음.
 - 포장 미실시 근거: 10월 27일 npm run package-app 직접 실행 시 Missing script: "package-app". PROVIDED_RUNTIME_NOT_INSTALLED나 운영 승인 키 오류를 실제로 받은 것은 아닙니다.
@@ -72,10 +73,10 @@
 
 ```powershell
 npm.cmd run check
-npm.cmd run start:pc
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1 -Port 5190
 ```
 
-기본 주소는 http://127.0.0.1:5190/ 이며 종료는 실행한 창에서 Ctrl+C입니다. 5189는 기존 제공 화면입니다. 자세한 실행 안내: docs/START_HERE.md.
+위 명령의 접속 주소는 http://127.0.0.1:5190/ 이며 종료는 실행한 창에서 Ctrl+C입니다. -Port를 생략하면 기본 포트는 5189입니다. 두 포트는 서로 다른 기능용 주소가 아니라 실행할 때 선택하는 포트입니다. 사용자는 기본 포트 5189 점유 오류와 공식 실행 도구의 계정 연결 준비 완료 문구를 보고했습니다. 5190 재실행 성공 여부는 이 추가 보고만으로 확정하지 않습니다. 자세한 실행 안내: docs/START_HERE.md.
 
 ### 시연 순서 · 아직 전체 연습 완료로 기록하지 않음
 
@@ -112,4 +113,4 @@ npm.cmd run start:pc
 - package-app 명령 없음으로 공식 포장·INSTALL.md·manifest·승인 host 바로가기 검증 미실시. 최신 안내에 따라 포장 생략.
 - 사용자의 PC와 다른 PC에서 전체 기능이 같게 동작하는지는 미확인. Windows 정책·권한에 따라 확인 불가가 나올 수 있습니다.
 - 측정·조회 기록은 화면 메모리에만 보관하며 새로고침 시 초기화됩니다. 자동 공격 탐지·상시 모니터링 기능이 아닙니다.
-- 다음 확인: 위 시연 순서대로 사용자 전체 연습, 이 문서를 포함한 최종 커밋 저장, GitHub에 올린 커밋과 로컬 커밋 일치 확인, 실제 과제의 저장소 주소·40자리 커밋 제출. 아직 push나 제출하지 않았습니다.
+- 다음 확인: 위 시연 순서대로 사용자 전체 연습, 문서 정정을 포함한 최종 커밋·push 및 원격 일치 확인, 실제 과제의 저장소 주소·40자리 커밋 제출. 이전 코드 push는 완료했으며, 과제 제출은 아직 하지 않았습니다.
