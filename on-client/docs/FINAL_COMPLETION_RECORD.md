@@ -1,5 +1,7 @@
 # 완성 기록틀 · 라요
 
+> 후속 실행 수정: 공식 보안 준비가 빠지는 문제를 고쳐 tools/start-alekov.ps1로 실행합니다. npm start도 같은 도구를 호출합니다. 실제 확인과 SDP 미연결 원인은 docs/LAUNCH_AND_SDP_FIX.md에 구분했습니다. 아래의 단순 npm start·직접 Node 실행 설명은 이전 시점의 기록과 구분합니다.
+
 ## 2026-10-27 복구 이후 실행 구조 정정
 
 아래 기록의 0.2.11·5190·독립 메뉴 설명은 당시 이력입니다. 현재는 공식 0.2.14 제공 파일을 검증해 복구하고, 추가 PC 화면을 기존 student/extension.mjs의 보호 현황 학생 영역으로 통합했습니다. 표준 실행은 on-client에서 `npm.cmd start`, 기본 주소 http://127.0.0.1:5189/ 입니다. 기존 세 메뉴를 유지합니다. 조회용 추가 서버는 student/pc-server.mjs에서 공식 createOnServer를 재사용하며, 제공 서버 원문 자체를 임의 수정하지 않았습니다.

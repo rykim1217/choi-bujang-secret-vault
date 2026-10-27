@@ -1,4 +1,4 @@
-> **2026-10-27 학생 통합본 안내**: 일반 실행은 on-client에서 `npm.cmd start`, 기본 주소는 http://127.0.0.1:5189/ 입니다. PC 추가 화면은 보호 현황의 학생 구현 영역에서 표시합니다. [최신 실행 안내](START_HERE.md)를 먼저 보세요. `npm run start:provided` 또는 제공 start-alekov.ps1은 원본 제공 서버만 실행하므로 학생 추가 PC API는 제공하지 않습니다. 아래 공식/과거 안내의 실행 방식과 구분합니다. 승인 host 지원은 별도 미검증입니다.
+> **2026-10-27 공지 반영**: on-client에서 `powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\start-alekov.ps1`로 실행하고 http://127.0.0.1:5189/ 을 엽니다. 공식 보안 준비 절차를 유지한 채 학생 추가 서버를 실행합니다. npm start는 이제 이 도구를 호출하는 별칭이며 Node 서버를 직접 실행하지 않습니다. [현재 실행 안내](START_HERE.md)를 우선합니다.
 
 # 라요 · 처음 실행하는 분께
 

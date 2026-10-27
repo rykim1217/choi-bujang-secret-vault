@@ -36,6 +36,9 @@ function Stop-With([string]$text, [int]$code = 1) { Write-Host $text -Foreground
 # 1) 폴더 확인: 이 스크립트가 있는 tools 의 상위가 앱 폴더여야 합니다.
 $root = Split-Path -Parent $PSScriptRoot
 $server = Join-Path $root 'src\server.mjs'
+# Local student extension: retain all official host preparation and argument checks.
+$studentServer = Join-Path $root 'student\pc-server.mjs'
+if (Test-Path -LiteralPath $studentServer -PathType Leaf) { $server = $studentServer }
 $package = Join-Path $root 'package.json'
 foreach ($path in @($root, $server, $package)) {
   if (-not (Test-Path -LiteralPath $path)) { Stop-With "앱 폴더가 아닙니다. 받은 시작 틀의 on-client 폴더 안에서 tools\start-alekov.ps1 을 실행해 주세요. (없는 파일: $path)" }

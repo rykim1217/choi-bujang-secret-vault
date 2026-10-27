@@ -1,5 +1,7 @@
 # 현재 실행 구조 · 2026-10-27 통합본
 
+> 후속 공지 반영: 실행 방법은 docs/LAUNCH_AND_SDP_FIX.md와 START_HERE.md를 우선합니다. npm start는 이제 공식 PowerShell 실행 도구를 호출하며, 공식 보안 준비 결과와 SDP 설정을 학생 서버에 전달합니다. 아래의 직접 Node 실행·start:provided 설명은 직전 통합 단계의 이력입니다.
+
 ## 실행
 
 on-client 폴더의 일반 권한 PowerShell에서 `npm.cmd start`, 브라우저 주소 http://127.0.0.1:5189/ 입니다. 종료는 같은 창에서 Ctrl+C입니다. 기존 5190 분리 화면은 종료했습니다.

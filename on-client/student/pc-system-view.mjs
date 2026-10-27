@@ -28,7 +28,8 @@ export function createSystemView(){
     const logs=data?.logs;const readable=logs&&['System','Application'].every(k=>logs[k]?.status==='ok');
     make('Windows 기록 · 최근 24시간',logs?(readable?`경고 ${logs.System.data.warnings+logs.Application.data.warnings} · 오류 ${logs.System.data.errors+logs.Application.data.errors}`:'확인 불가 항목 있음'):'조회 전',logs?`단위: 건 · 조회 ${time(logs.Application.measuredAt)}`:'System · Application');
     const sdp=data?.sdp;
-    make('SDP 연결',sdp?.status==='connected'?'SDP 연결 확인':sdp?.status==='unknown'?'SDP 확인 불가':'SDP 미연결',sdp?.reason??'PC 조회 성공과 별도로 확인해요');
+    make('SDP 연결',!sdp?'조회 전':sdp.status==='connected'?'SDP 연결 확인':sdp.status==='disconnected'?'SDP 미연결':'SDP 확인 불가',sdp?.reason??'PC 조회 성공과 별도로 확인해요');
+    if(sdp){details.append(el('h3','SDP 서버 연결 확인'),el('p',sdp.reason),el('p',`확인 시각: ${time(sdp.checkedAt)}`));}
     if(network){details.append(el('h3','네트워크 · 인터넷 접속 성공을 뜻하지 않습니다.'));if(network.status==='unknown')details.append(el('p',network.reason));
       for(const a of adapters){const section=el('div',undefined,'pc-detail-row');section.append(el('strong',`${a.name} · ${a.status==='Up'?'연결됨':a.status==='Disconnected'?'연결 끊김':a.status}`),el('p',a.description),el('p',`IP: ${(a.addresses??[]).filter(Boolean).join(', ')||'없음'} / 게이트웨이: ${(a.gateways??[]).filter(Boolean).join(', ')||'없음'}`));details.append(section);}}
     if(fw){details.append(el('h3','방화벽 프로필 · 현재 적용 설정 저장소'));for(const p of profiles)details.append(el('p',`${({Domain:'도메인',Private:'개인',Public:'공용'})[p.name]??p.name}: ${p.enabled==='True'?'켜짐':p.enabled==='False'?'꺼짐':'확인 불가'}`));if(fw.status==='unknown')details.append(el('p',fw.reason));}
